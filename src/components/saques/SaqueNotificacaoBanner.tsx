@@ -19,10 +19,10 @@ export function SaqueNotificacaoBanner() {
   const router   = useRouter()
   const pathname = usePathname()
 
-  // Derive role prefix: /influenciador | /gerente | /intermediario
-  const rolePrefix = (['influenciador', 'gerente', 'intermediario'] as const)
+  // Derive role prefix: /afiliado | /gerente | /intermediario
+  const rolePrefix = (['afiliado', 'gerente', 'intermediario'] as const)
     .map(r => `/${r}`)
-    .find(p => pathname.startsWith(p)) ?? '/influenciador'
+    .find(p => pathname.startsWith(p)) ?? '/afiliado'
 
   const [saques, setSaques] = useState<SaqueAtivo[]>([])
 

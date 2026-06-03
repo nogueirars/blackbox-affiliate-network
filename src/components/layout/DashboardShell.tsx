@@ -21,14 +21,14 @@ import {
 } from '@/config/nav'
 import { stopImpersonation, clearImpersonationCookie } from '@/app/actions/impersonation'
 
-type ViewKey = 'admin' | 'intermediario' | 'gerente' | 'influenciador'
+type ViewKey = 'admin' | 'intermediario' | 'gerente' | 'afiliado'
 
 function deriveAvailableViews(roles: string[]): ViewKey[] {
   const views: ViewKey[] = []
   if (roles.includes('admin')) views.push('admin')
   if (roles.includes('intermediario')) views.push('intermediario')
   if (roles.includes('gerente')) views.push('gerente')
-  if (roles.includes('influenciador')) views.push('influenciador')
+  if (roles.includes('afiliado')) views.push('afiliado')
   return views
 }
 
@@ -198,7 +198,7 @@ export default function DashboardShell({ children, userEmail, roles, isAdmin, ro
   }, [mobileOpen])
 
   const availableViews = deriveAvailableViews(roles)
-  const [activeView, setActiveView] = useState<ViewKey>(availableViews[0] ?? 'influenciador')
+  const [activeView, setActiveView] = useState<ViewKey>(availableViews[0] ?? 'afiliado')
 
   // Prevent activeView from being stuck on an unavailable view after navigation/impersonation
   const rolesStr = roles.join(',')
@@ -231,7 +231,7 @@ export default function DashboardShell({ children, userEmail, roles, isAdmin, ro
           {/* Left: icon + label + user pill */}
           <div className="flex items-center gap-3 min-w-0">
             <span className="material-symbols-outlined text-[15px] opacity-80" style={{ color: 'rgba(255,255,255,0.9)' }}>admin_panel_settings</span>
-            <span className="text-[11px] font-semibold uppercase tracking-[0.08em] opacity-70 hidden sm:block" style={{ color: 'rgba(255,255,255,0.9)' }}>Modo Admin</span>
+            <span className="text-[11px] font-semibold uppercase tracking-[0.08em] opacity-70 hidden sm:block" style={{ color: 'rgba(255,255,255,0.9)' }}>Modo Agência</span>
             <span className="opacity-40 hidden sm:block" style={{ color: 'white', fontSize: '10px' }}>·</span>
             <div className="flex items-center gap-1.5 min-w-0">
               <div
@@ -379,7 +379,7 @@ export default function DashboardShell({ children, userEmail, roles, isAdmin, ro
         {/* Sticky bottom: full UserMenu, always expanded */}
         <UserMenu
           email={userEmail}
-          role={roles[0] ?? 'influenciador'}
+          role={roles[0] ?? 'afiliado'}
           roleLabel={roleLabel}
           roleBadgeClass={roleBadgeClass}
           forceExpanded={true}
@@ -471,7 +471,7 @@ export default function DashboardShell({ children, userEmail, roles, isAdmin, ro
         {/* Sticky bottom: user menu */}
         <UserMenu
           email={userEmail}
-          role={roles[0] ?? 'influenciador'}
+          role={roles[0] ?? 'afiliado'}
           roleLabel={roleLabel}
           roleBadgeClass={roleBadgeClass}
           views={availableViews}

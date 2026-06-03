@@ -17,7 +17,7 @@ interface Props {
 type TipoContrato = 'CPA' | 'REVSHARE' | 'MISTO'
 
 const ROLE_LABELS: Record<string, string> = {
-  INFLUENCER: 'Influenciador',
+  AFILIADO: 'Afiliado',
   INTERMEDIARIO: 'Intermediário',
   GERENTE: 'Gerente',
   ADMIN: 'Admin',

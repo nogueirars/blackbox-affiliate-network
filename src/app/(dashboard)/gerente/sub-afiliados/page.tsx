@@ -60,9 +60,9 @@ export default async function GerenteSubAfiliadosPage() {
   return (
     <div className="animate-fade-in flex flex-col gap-6">
       <div>
-        <h1 className="text-display-lg text-[var(--color-on-surface)] mb-1">Influenciadores</h1>
+        <h1 className="text-display-lg text-[var(--color-on-surface)] mb-1">Afiliados</h1>
         <p className="text-body-md text-[var(--color-on-surface-variant)]">
-          Gerencie os influenciadores da sua rede
+          Gerencie os afiliados da sua rede
         </p>
       </div>
 

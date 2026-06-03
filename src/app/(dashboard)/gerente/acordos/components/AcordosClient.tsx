@@ -220,7 +220,7 @@ export default function AcordosClient({ acordos, influencers }: Props) {
                 <table className="w-full text-sm">
                   <thead>
                     <tr style={{ borderBottom: '1px solid var(--color-outline-variant)', background: 'var(--color-surface-container-low)' }}>
-                      <th className="text-left px-5 py-3 text-xs font-semibold text-[var(--color-on-surface-variant)] uppercase tracking-wider">Influenciador</th>
+                      <th className="text-left px-5 py-3 text-xs font-semibold text-[var(--color-on-surface-variant)] uppercase tracking-wider">Afiliado</th>
                       <th className="text-left px-5 py-3 text-xs font-semibold text-[var(--color-on-surface-variant)] uppercase tracking-wider min-w-[200px]">Repasse (CPA)</th>
                       <th className="text-left px-5 py-3 text-xs font-semibold text-[var(--color-on-surface-variant)] uppercase tracking-wider min-w-[200px]">Repasse (RevShare)</th>
                       <th className="text-center px-5 py-3 text-xs font-semibold text-[var(--color-on-surface-variant)] uppercase tracking-wider">Ações</th>
@@ -231,7 +231,7 @@ export default function AcordosClient({ acordos, influencers }: Props) {
                     {influencers.length === 0 ? (
                       <tr>
                         <td colSpan={4} className="px-5 py-8 text-center text-sm text-[var(--color-on-surface-variant)] opacity-60">
-                          Nenhum influenciador na rede
+                          Nenhum afiliado na rede
                         </td>
                       </tr>
                     ) : influencers.map(inf => {

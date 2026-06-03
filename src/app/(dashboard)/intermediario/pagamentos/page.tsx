@@ -154,8 +154,8 @@ export default async function IntermediarioPagamentosPage({
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <StatCard label="Comissão Total da Rede"       value={fmt(comissaoTotalRede)}  icon="group"              accent="#8B5CF6" sub="Produção de toda a rede" />
-          <StatCard label="Comissão dos Influenciadores" value={fmt(comissaoInfluencers)} icon="trending_up"        accent="#F59E0B" sub="Parte dos influenciadores(as)" />
-          <StatCard label="Sua Comissão (Intermediário)" value={fmt(minhaComissao)}       icon="workspace_premium"  accent="#22D3A5" sub="Total da Rede – Parte dos Influenciadores(as)" />
+          <StatCard label="Comissão dos Afiliados" value={fmt(comissaoInfluencers)} icon="trending_up"        accent="#F59E0B" sub="Parte dos afiliados(as)" />
+          <StatCard label="Sua Comissão (Intermediário)" value={fmt(minhaComissao)}       icon="workspace_premium"  accent="#22D3A5" sub="Total da Rede – Parte dos Afiliados(as)" />
         </div>
       </div>
 
@@ -167,7 +167,7 @@ export default async function IntermediarioPagamentosPage({
         </div>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard label="Total Comissão Paga" value={fmt(totalComissaoPaga)} sub="Da BLACKBOX"                    icon="download"                accent="#8B5CF6" />
-          <StatCard label="Subs Receberam"      value={fmt(subsReceberam)}     sub="Pagos aos Influenciadores(as)"  icon="upload"                  accent="#F59E0B" />
+          <StatCard label="Subs Receberam"      value={fmt(subsReceberam)}     sub="Pagos aos Afiliados(as)"  icon="upload"                  accent="#F59E0B" />
           <StatCard label="Saldo Recebido"      value={fmt(saldoRecebido)}     sub="Recebido – Repassado"           icon="account_balance_wallet"  accent="#22D3A5" />
           <StatCard label="Pendente BLACKBOX"   value={fmt(pendenteBB)}        sub="Ainda não pago"                 icon="schedule"                accent="#F59E0B" />
         </div>

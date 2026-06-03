@@ -38,13 +38,13 @@ type VwRow = {
 export default async function GerenteProducaoPage({
   searchParams,
 }: {
-  searchParams: Promise<{ periodo?: string; influenciador?: string; casa?: string; agrupamento?: string; dataInicio?: string; dataFim?: string }>
+  searchParams: Promise<{ periodo?: string; afiliado?: string; casa?: string; agrupamento?: string; dataInicio?: string; dataFim?: string }>
 }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { periodo = '30', influenciador: filterInfluenciador, casa: filterCasa, agrupamento = 'diaria', dataInicio, dataFim } = await searchParams
+  const { periodo = '30', afiliado: filterAfiliado, casa: filterCasa, agrupamento = 'diaria', dataInicio, dataFim } = await searchParams
 
   // Resolve o public_users do usuário logado
   const publicUser = await prisma.public_users.findUnique({
@@ -73,7 +73,7 @@ export default async function GerenteProducaoPage({
 
   let rows: VwRow[] = []
   let casasParaFiltro: [string, string][] = []
-  let influenciadoresLista: { id: string; nome_completo: string }[] = []
+  let afiliadosLista: { id: string; nome_completo: string }[] = []
 
   try {
   if (myId) {
@@ -183,7 +183,7 @@ export default async function GerenteProducaoPage({
   }
 
   if (myId) {
-    const influenciadores = await prisma.public_users.findMany({
+    const afiliados = await prisma.public_users.findMany({
       where: {
         id_gerente: myId,
       },
@@ -195,7 +195,7 @@ export default async function GerenteProducaoPage({
         nome_completo: 'asc'
       }
     })
-    influenciadoresLista = influenciadores
+    afiliadosLista = afiliados
   }
   } catch (e) {
     console.error('[gerente/producao] prisma error:', e)
@@ -237,10 +237,10 @@ export default async function GerenteProducaoPage({
 
       {/* Filters */}
       <ProducaoFilters
-        influenciadores={influenciadoresLista}
+        afiliados={afiliadosLista}
         casas={casasParaFiltro}
         periodo={periodo}
-        filterInfluenciador={filterInfluenciador}
+        filterAfiliado={filterAfiliado}
         filterCasa={filterCasa}
         agrupamento={agrupamento}
         dataInicio={dataInicio}

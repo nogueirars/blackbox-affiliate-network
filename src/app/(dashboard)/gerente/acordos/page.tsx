@@ -43,7 +43,7 @@ export default async function GerenteAcordosPage() {
       <div>
         <h1 className="text-display-lg text-[var(--color-on-surface)] mb-1">Acordos Comerciais</h1>
         <p className="text-body-md text-[var(--color-on-surface-variant)]">
-          Contratos com a BLACKBOX e repasses para sua rede de influenciadores
+          Contratos com a BLACKBOX e repasses para sua rede de afiliados
         </p>
       </div>
       <AcordosClient acordos={[]} influencers={[]} />
@@ -116,7 +116,7 @@ export default async function GerenteAcordosPage() {
         nome_completo: true,
         email: true,
         user_roles: {
-          where: { role: 'INFLUENCER', ativo: true },
+          where: { role: 'AFILIADO', ativo: true },
           select: { id: true }
         }
       }
@@ -173,7 +173,7 @@ export default async function GerenteAcordosPage() {
       <div>
         <h1 className="text-display-lg text-[var(--color-on-surface)] mb-1">Acordos Comerciais</h1>
         <p className="text-body-md text-[var(--color-on-surface-variant)]">
-          Contratos com a BLACKBOX e repasses para sua rede de influenciadores
+          Contratos com a BLACKBOX e repasses para sua rede de afiliados
         </p>
       </div>
       <AcordosClient acordos={acordos} influencers={influencers} />

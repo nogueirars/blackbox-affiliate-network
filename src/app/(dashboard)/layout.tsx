@@ -7,20 +7,20 @@ import { SidebarProvider } from '@/contexts/SidebarContext'
 // DB enum → UI role key (lowercase, Portuguese)
 const DB_ROLE_MAP: Record<string, string> = {
   ADMIN: 'admin',
-  INFLUENCER: 'influenciador',
+  AFILIADO: 'afiliado',
   INTERMEDIARIO: 'intermediario',
   GERENTE: 'gerente',
 }
 
 const ROLE_LABEL: Record<string, string> = {
-  influenciador: 'Influenciador', gerente: 'Gerente',
-  intermediario: 'Intermediário', admin: 'Admin',
+  afiliado: 'Afiliado', gerente: 'Gerente',
+  intermediario: 'Intermediário', admin: 'Agência',
 }
 const ROLE_BADGE: Record<string, string> = {
-  influenciador: 'badge-gray', gerente: 'badge-blue',
+  afiliado: 'badge-gray', gerente: 'badge-blue',
   intermediario: 'badge-orange', admin: 'badge-red',
 }
-const ROLE_HIERARCHY = ['admin', 'intermediario', 'gerente', 'influenciador']
+const ROLE_HIERARCHY = ['admin', 'intermediario', 'gerente', 'afiliado']
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
@@ -70,9 +70,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
     roles.push(...dbRoles)
   }
 
-  if (roles.length === 0) roles.push('influenciador')
+  if (roles.length === 0) roles.push('afiliado')
 
-  const primaryRole = ROLE_HIERARCHY.find(r => roles.includes(r)) ?? 'influenciador'
+  const primaryRole = ROLE_HIERARCHY.find(r => roles.includes(r)) ?? 'afiliado'
 
   const isImpersonating = user.user_metadata?.is_impersonating === true
   const impersonatedEmail = user.email

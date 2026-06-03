@@ -91,7 +91,7 @@ const PIX_TYPE_LABEL: Record<string, string> = {
 }
 
 const PERFIL_LABEL: Record<string, string> = {
-  influenciador: 'Influenciador',
+  afiliado: 'Afiliado',
   intermediario: 'Intermediário',
   gerente:       'Gerente',
 }
@@ -420,7 +420,7 @@ export default function SaquesAdminClient({ saques }: { saques: Saque[] }) {
           className="px-3 py-2.5 rounded-xl text-sm font-medium outline-none cursor-pointer"
           style={{ background: 'var(--color-surface-container-high)', border: '1px solid var(--color-outline-variant)', color: 'var(--color-on-surface)' }}>
           <option value="TODOS">Todos Perfis</option>
-          <option value="influenciador">Influenciadores</option>
+          <option value="afiliado">Afiliados</option>
           <option value="intermediario">Intermediários</option>
           <option value="gerente">Gerentes</option>
         </select>

@@ -9,7 +9,7 @@ export default function PagamentosClient() {
   // Mock data for UI scaffolding based on the image
   const totaisRede = {
     total: 251180.19,
-    influenciadores: 191225.33,
+    afiliados: 191225.33,
     gerente: 59954.85
   }
 
@@ -36,8 +36,8 @@ export default function PagamentosClient() {
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <StatCard label="Comissão Total da Rede"       value={fmt(totaisRede.total)}          icon="groups"            accent="#0275F3" sub="Produção de toda a rede" />
-          <StatCard label="Comissão dos Influenciadores" value={fmt(totaisRede.influenciadores)} icon="arrow_upward"      accent="#F59E0B" sub="Parte dos influenciadores(as)" />
-          <StatCard label="Sua Comissão (Gerente)"       value={fmt(totaisRede.gerente)}         icon="workspace_premium" accent="#22D3A5" sub="Total da Rede − Parte dos Influenciadores(as)" />
+          <StatCard label="Comissão dos Afiliados" value={fmt(totaisRede.afiliados)} icon="arrow_upward"      accent="#F59E0B" sub="Parte dos afiliados(as)" />
+          <StatCard label="Sua Comissão (Gerente)"       value={fmt(totaisRede.gerente)}         icon="workspace_premium" accent="#22D3A5" sub="Total da Rede − Parte dos Afiliados(as)" />
         </div>
       </div>
 
@@ -50,7 +50,7 @@ export default function PagamentosClient() {
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <StatCard label="Total Comissão Paga" value={fmt(totaisHistorico.totalPaga)}    icon="arrow_downward"         accent="#0275F3" sub={`Da BLACKBOX (estornos: ${fmt(-totaisHistorico.estornosPaga)})`} />
-          <StatCard label="Subs Receberam"      value={fmt(totaisHistorico.subsReceberam)} icon="arrow_upward"           accent="#F59E0B" sub={`Pagos aos Influenciadores (estornos: ${fmt(-totaisHistorico.estornosSubs)})`} />
+          <StatCard label="Subs Receberam"      value={fmt(totaisHistorico.subsReceberam)} icon="arrow_upward"           accent="#F59E0B" sub={`Pagos aos Afiliados (estornos: ${fmt(-totaisHistorico.estornosSubs)})`} />
           <StatCard label="Saldo Recebido"      value={fmt(totaisHistorico.saldoRecebido)} icon="account_balance_wallet" accent="#22D3A5" sub="Recebido − Repassado" />
           <StatCard label="Pendente BLACKBOX"   value={fmt(totaisHistorico.pendente)}      icon="schedule"               accent="#F59E0B" sub="Ainda não pago" />
         </div>
@@ -77,14 +77,14 @@ export default function PagamentosClient() {
           <div className="bg-[var(--color-surface-container-low)] border-b border-[var(--color-outline-variant)] px-6 py-4 flex items-center justify-between">
             <h3 className="text-headline-sm text-[var(--color-on-surface)] font-semibold flex items-center gap-2">
               <span className="material-symbols-outlined text-[var(--color-success)]">payments</span>
-              Pagamentos {activeTab === 'recebidos' ? 'Recebidos da BLACKBOX' : 'Repassados aos Influenciadores'}
+              Pagamentos {activeTab === 'recebidos' ? 'Recebidos da BLACKBOX' : 'Repassados aos Afiliados'}
             </h3>
             {activeTab === 'repassados' && (
               <div className="relative">
                 <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-on-surface-variant)] text-[18px]">search</span>
                 <input 
                   type="text"
-                  placeholder="Buscar influenciador..."
+                  placeholder="Buscar afiliado..."
                   className="w-full sm:w-auto bg-[var(--color-surface-container-high)] border border-[var(--color-outline-variant)] rounded-lg pl-9 pr-4 py-1.5 text-sm text-[var(--color-on-surface)] focus:outline-none focus:border-[var(--color-primary)] transition-colors"
                 />
               </div>
@@ -97,7 +97,7 @@ export default function PagamentosClient() {
                 <tr>
                   <th className="text-left px-6 py-3 text-label-md text-[var(--color-on-surface-variant)] uppercase bg-[var(--color-surface-container-low)] whitespace-nowrap">Data</th>
                   {activeTab === 'repassados' && (
-                    <th className="text-left px-6 py-3 text-label-md text-[var(--color-on-surface-variant)] uppercase bg-[var(--color-surface-container-low)] whitespace-nowrap">Influenciador(a)</th>
+                    <th className="text-left px-6 py-3 text-label-md text-[var(--color-on-surface-variant)] uppercase bg-[var(--color-surface-container-low)] whitespace-nowrap">Afiliado(a)</th>
                   )}
                   <th className="text-left px-6 py-3 text-label-md text-[var(--color-on-surface-variant)] uppercase bg-[var(--color-surface-container-low)] whitespace-nowrap">Status</th>
                   <th className="text-left px-6 py-3 text-label-md text-[var(--color-on-surface-variant)] uppercase bg-[var(--color-surface-container-low)] whitespace-nowrap">Valor</th>

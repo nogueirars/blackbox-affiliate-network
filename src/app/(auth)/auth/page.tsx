@@ -13,7 +13,7 @@ interface InviteInfo {
 }
 
 const ROLE_LABEL: Record<string, string> = {
-  INFLUENCER: 'Influenciador',
+  AFILIADO: 'Afiliado',
   GERENTE: 'Gerente',
   INTERMEDIARIO: 'Intermediário',
 }
@@ -194,7 +194,7 @@ export default function AuthPage() {
               </span>
             </h1>
             <p style={{ fontSize: '0.95rem', color: 'rgba(173,198,255,0.5)', lineHeight: 1.6 }}>
-              Plataforma completa para gerenciar influenciadores, acompanhar produção e receber comissões.
+              Plataforma completa para gerenciar afiliados, acompanhar produção e receber comissões.
             </p>
           </div>
 

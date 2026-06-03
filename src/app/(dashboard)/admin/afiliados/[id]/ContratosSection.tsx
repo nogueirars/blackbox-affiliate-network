@@ -42,13 +42,13 @@ interface Props {
 }
 
 const roleBadge: Record<string, string> = {
-  INFLUENCER: 'badge-gray',
+  AFILIADO: 'badge-gray',
   GERENTE: 'badge-blue',
   INTERMEDIARIO: 'badge-orange',
   ADMIN: 'badge-red',
 }
 const roleLabel: Record<string, string> = {
-  INFLUENCER: 'Influenciador',
+  AFILIADO: 'Afiliado',
   GERENTE: 'Gerente',
   INTERMEDIARIO: 'Intermediário',
   ADMIN: 'Admin',

@@ -12,7 +12,7 @@ interface Props {
 
 const ROLES = [
   { value: '', label: 'Todas Funções' },
-  { value: 'INFLUENCER', label: 'Influenciador' },
+  { value: 'AFILIADO', label: 'Afiliado' },
   { value: 'GERENTE', label: 'Gerente' },
   { value: 'INTERMEDIARIO', label: 'Intermediário' },
 ]

@@ -999,7 +999,7 @@ enum release_type {
 
 enum user_role {
   ADMIN
-  INFLUENCER
+  AFILIADO
   INTERMEDIARIO
   GERENTE
 

@@ -18,11 +18,11 @@ interface Props {
   onCreated: () => void
 }
 
-type RoleKey = 'INFLUENCER' | 'INTERMEDIARIO' | 'GERENTE'
+type RoleKey = 'AFILIADO' | 'INTERMEDIARIO' | 'GERENTE'
 type TipoContrato = 'CPA' | 'REVSHARE' | 'MISTO'
 
 const ROLE_LABELS: Record<RoleKey, string> = {
-  INFLUENCER:    'Influenciador',
+  AFILIADO:    'Afiliado',
   INTERMEDIARIO: 'Intermediário',
   GERENTE:       'Gerente',
 }

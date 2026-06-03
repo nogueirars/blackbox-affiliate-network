@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { Prisma } from '@prisma/client'
-import { FinanceiroClient } from '@/app/(dashboard)/influenciador/financeiro/FinanceiroClient'
+import { FinanceiroClient } from '@/app/(dashboard)/afiliado/financeiro/FinanceiroClient'
 
 type RegraLiberacao = {
   tipo_liberacao: string

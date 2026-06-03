@@ -3,7 +3,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { NextRequest, NextResponse } from 'next/server'
 import { isAdmin } from '@/lib/auth-helpers'
 
-/** GET /api/admin/contratos/usuarios?role=INFLUENCER&search=xyz */
+/** GET /api/admin/contratos/usuarios?role=AFILIADO&search=xyz */
 export async function GET(req: NextRequest) {
   try {
     const supabase = await createClient()
@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
     const role   = searchParams.get('role')?.toUpperCase()
     const search = searchParams.get('search')?.trim() ?? ''
 
-    const validRoles = ['INFLUENCER', 'INTERMEDIARIO', 'GERENTE']
+    const validRoles = ['AFILIADO', 'INTERMEDIARIO', 'GERENTE']
     if (!role || !validRoles.includes(role)) {
       return NextResponse.json({ error: 'role inválido' }, { status: 400 })
     }

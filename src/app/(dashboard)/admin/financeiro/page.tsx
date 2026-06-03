@@ -68,14 +68,14 @@ export default async function AdminFinanceiroPage({
     prisma.public_users.findMany({
       where: {
         ativo: true,
-        user_roles: { some: { role: 'INFLUENCER' as never, ativo: true } },
+        user_roles: { some: { role: 'AFILIADO' as never, ativo: true } },
       },
       select: {
         id: true,
         nome_completo: true,
         email: true,
         user_roles: {
-          where: { role: 'INFLUENCER' as never, ativo: true },
+          where: { role: 'AFILIADO' as never, ativo: true },
           select: {
             contratos: {
               where: { ativo: true },
@@ -104,7 +104,7 @@ export default async function AdminFinanceiroPage({
     }),
   ])
 
-  const countInfluencer    = roleCounts.find(r => r.role === 'INFLUENCER')?._count.id    ?? 0
+  const countInfluencer    = roleCounts.find(r => r.role === 'AFILIADO')?._count.id    ?? 0
   const countIntermediario = roleCounts.find(r => r.role === 'INTERMEDIARIO')?._count.id ?? 0
   const countGerente       = roleCounts.find(r => r.role === 'GERENTE')?._count.id       ?? 0
 

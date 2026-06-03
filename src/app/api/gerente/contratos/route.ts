@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
   }
 
   const influencerRole = await prisma.user_roles.findUnique({ where: { id: id_user_role_influencer } })
-  if (!influencerRole || influencerRole.role !== 'INFLUENCER' || !influencerRole.ativo) {
+  if (!influencerRole || influencerRole.role !== 'AFILIADO' || !influencerRole.ativo) {
     return NextResponse.json({ error: 'id_user_role_influencer inválido ou não é um influencer ativo' }, { status: 422 })
   }
 

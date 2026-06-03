@@ -30,7 +30,7 @@ export default async function AdminProducaoPage({
 
   // ── Load filter dropdown data ──────────────────────────────────────────────
   let roleFilter: any = undefined
-  if (visao === 'influenciador') roleFilter = 'INFLUENCER'
+  if (visao === 'afiliado') roleFilter = 'AFILIADO'
   if (visao === 'gerente') roleFilter = 'GERENTE'
   if (visao === 'intermediario') roleFilter = 'INTERMEDIARIO'
 
@@ -117,7 +117,7 @@ export default async function AdminProducaoPage({
       filterContractIds = userContracts.map(c => c.id)
     }
 
-    if (visao === 'influenciador') {
+    if (visao === 'afiliado') {
       rawRows = await prisma.vw_producao_influencer.findMany({
         where: {
           data: { gte: since, lte: until },

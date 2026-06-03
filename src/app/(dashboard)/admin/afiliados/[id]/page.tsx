@@ -11,11 +11,11 @@ function fmt(v: number) {
 }
 
 const roleLabel: Record<string, string> = {
-  INFLUENCER: 'Influenciador', GERENTE: 'Gerente',
+  AFILIADO: 'Afiliado', GERENTE: 'Gerente',
   INTERMEDIARIO: 'Intermediário', ADMIN: 'Admin',
 }
 const roleBadge: Record<string, string> = {
-  INFLUENCER: 'badge-gray', GERENTE: 'badge-blue',
+  AFILIADO: 'badge-gray', GERENTE: 'badge-blue',
   INTERMEDIARIO: 'badge-orange', ADMIN: 'badge-red',
 }
 const statusMap: Record<string, { label: string; bc: string; dc: string }> = {

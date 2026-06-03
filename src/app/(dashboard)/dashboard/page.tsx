@@ -3,7 +3,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { prisma } from '@/lib/prisma'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { getSaldoInfluenciador } from '@/lib/finance/saldo-influenciador'
+import { getSaldoAfiliado } from '@/lib/finance/saldo-afiliado'
 import { getSaldoGerente } from '@/lib/finance/saldo-gerente'
 import { getSaldoIntermediario } from '@/lib/finance/saldo-intermediario'
 import { getTransparenciaData } from '@/services/transparencia.service'
@@ -37,7 +37,7 @@ export default async function DashboardPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const role = (user.app_metadata?.role ?? 'influenciador') as string
+  const role = (user.app_metadata?.role ?? 'afiliado') as string
   console.log('[dashboard] role:', role, 'user:', user.email)
   const db = createAdminClient()
 
@@ -249,9 +249,9 @@ export default async function DashboardPage() {
 
   const since30dStr = new Date(Date.now() - 30 * 86400_000).toISOString().slice(0, 10)
 
-  // ── Influenciador ─────────────────────────────────────────────────────────
-  if (role === 'influenciador') {
-    const saldo = await getSaldoInfluenciador(user.id).catch(() => ({
+  // ── Afiliado ─────────────────────────────────────────────────────────
+  if (role === 'afiliado') {
+    const saldo = await getSaldoAfiliado(user.id).catch(() => ({
       saldo_disponivel: 0, comissao_bruta: 0, pag_recebidos: 0,
       saques_ativos: 0, estornos: 0, influenciador_id: '',
     }))
@@ -260,7 +260,7 @@ export default async function DashboardPage() {
     if (myId) {
       try {
         const userRoleRow = await prisma.user_roles.findFirst({
-          where: { id_usuario: myId, role: 'INFLUENCER', ativo: true },
+          where: { id_usuario: myId, role: 'AFILIADO', ativo: true },
           select: { id: true }
         })
         if (userRoleRow) {
@@ -280,8 +280,8 @@ export default async function DashboardPage() {
             }
           }
         }
-      } catch (e) { console.error('[dashboard] prisma influenciador:', e) }
-      casas = await getTransparenciaData(myId, 'influenciador').catch(() => [])
+      } catch (e) { console.error('[dashboard] prisma afiliado:', e) }
+      casas = await getTransparenciaData(myId, 'afiliado').catch(() => [])
     }
 
     kpiCards = [
@@ -298,11 +298,11 @@ export default async function DashboardPage() {
       saques_ativos: 0, incentivo: 0, consumido: 0, gerente_id: '',
     }))
 
-    subRoleLabelSingle = 'influenciador'
-    subRoleLabelPlural = 'influenciadores'
+    subRoleLabelSingle = 'afiliado'
+    subRoleLabelPlural = 'afiliados'
     subRoleHref = '/gerente/sub-afiliados'
 
-    let totalInfluenciadores = 0
+    let totalAfiliados = 0
     let totalReceita = 0
 
     if (myId) {
@@ -315,7 +315,7 @@ export default async function DashboardPage() {
       const influencerIds: string[] = []
       for (const u of infs ?? []) {
         if (u.status_aprovacao === 'APROVADO') {
-          totalInfluenciadores++
+          totalAfiliados++
           influencerIds.push(u.id)
         } else if (u.status_aprovacao === 'PENDENTE') {
           pendentes++
@@ -361,7 +361,7 @@ export default async function DashboardPage() {
 
     kpiCards = [
       { label: 'Saldo disponível',   value: fmt(saldo.saldo_disponivel), icon: 'account_balance_wallet', accent: saldo.saldo_disponivel > 0 ? '#22D3A5' : undefined },
-      { label: 'Influenciadores',    value: fmtNum(totalInfluenciadores), icon: 'group',   sub: 'aprovados na rede', accent: 'var(--color-primary)' },
+      { label: 'Afiliados',    value: fmtNum(totalAfiliados), icon: 'group',   sub: 'aprovados na rede', accent: 'var(--color-primary)' },
       { label: 'Receita rede (30d)', value: fmt(totalReceita),            icon: 'lan',     accent: totalReceita > 0 ? '#f59e0b' : undefined },
       { label: 'Sacado',             value: fmt(totalSacado),             icon: 'arrow_upward', accent: '#22D3A5' },
     ]
@@ -378,7 +378,7 @@ export default async function DashboardPage() {
     subRoleHref = '/intermediario/sub-afiliados'
 
     let totalGerentes = 0
-    let totalInfluenciadores = 0
+    let totalAfiliados = 0
     let totalReceita = 0
 
     if (myId) {
@@ -408,7 +408,7 @@ export default async function DashboardPage() {
           .in('id_gerente', gerenteIds)
           .eq('ativo', true)
           .eq('status_aprovacao', 'APROVADO')
-        totalInfluenciadores = iCnt ?? 0
+        totalAfiliados = iCnt ?? 0
         influencerIds = (infs ?? []).map((u: { id: string }) => u.id)
       }
 
@@ -450,7 +450,7 @@ export default async function DashboardPage() {
     kpiCards = [
       { label: 'Saldo disponível',   value: fmt(saldo.saldo_disponivel), icon: 'account_balance_wallet', accent: saldo.saldo_disponivel > 0 ? '#22D3A5' : undefined },
       { label: 'Gerentes',           value: fmtNum(totalGerentes),       icon: 'manage_accounts', sub: 'aprovados', accent: 'var(--color-primary)' },
-      { label: 'Influenciadores',    value: fmtNum(totalInfluenciadores), icon: 'group',           sub: 'na rede',   accent: '#8b5cf6' },
+      { label: 'Afiliados',    value: fmtNum(totalAfiliados), icon: 'group',           sub: 'na rede',   accent: '#8b5cf6' },
       { label: 'Receita rede (30d)', value: fmt(totalReceita),            icon: 'lan',             accent: totalReceita > 0 ? '#f59e0b' : undefined },
     ]
   }
@@ -472,7 +472,7 @@ export default async function DashboardPage() {
   const quickActions =
     role === 'gerente'
       ? [
-          { href: '/gerente/sub-afiliados', label: 'Influenciadores', icon: 'group',          accent: 'var(--color-primary)' },
+          { href: '/gerente/sub-afiliados', label: 'Afiliados', icon: 'group',          accent: 'var(--color-primary)' },
           { href: '/gerente/financeiro',     label: 'Solicitar saque', icon: 'payments',       accent: 'var(--color-success)' },
           { href: '/gerente/producao',       label: 'Produção',        icon: 'bar_chart',      accent: '#22D3A5'              },
           { href: '/gerente/transparencia',  label: 'Transparência',   icon: 'visibility',     accent: '#8b5cf6'              },
@@ -485,10 +485,10 @@ export default async function DashboardPage() {
           { href: '/intermediario/transparencia', label: 'Transparência',   icon: 'visibility',      accent: '#8b5cf6'              },
         ]
       : [
-          { href: '/influenciador/financeiro',   label: 'Solicitar saque', icon: 'arrow_upward', accent: 'var(--color-success)' },
-          { href: '/influenciador/producao',     label: 'Produção',        icon: 'bar_chart',    accent: 'var(--color-primary)' },
-          { href: '/influenciador/contratos',    label: 'Contratos',       icon: 'description',  accent: 'var(--color-info)'    },
-          { href: '/influenciador/transparencia',label: 'Transparência',   icon: 'visibility',   accent: '#8b5cf6'              },
+          { href: '/afiliado/financeiro',   label: 'Solicitar saque', icon: 'arrow_upward', accent: 'var(--color-success)' },
+          { href: '/afiliado/producao',     label: 'Produção',        icon: 'bar_chart',    accent: 'var(--color-primary)' },
+          { href: '/afiliado/contratos',    label: 'Contratos',       icon: 'description',  accent: 'var(--color-info)'    },
+          { href: '/afiliado/transparencia',label: 'Transparência',   icon: 'visibility',   accent: '#8b5cf6'              },
         ]
 
   return (

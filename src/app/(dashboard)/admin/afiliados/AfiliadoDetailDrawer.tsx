@@ -48,14 +48,14 @@ interface Props {
 
 const ROLE_OPTIONS = [
   {
-    value: 'INFLUENCER',
-    label: 'Influenciador(a)',
-    description: 'Acesso ao painel de influenciador(a) com produção própria',
+    value: 'AFILIADO',
+    label: 'Afiliado(a)',
+    description: 'Acesso ao painel de afiliado(a) com produção própria',
   },
   {
     value: 'GERENTE',
     label: 'Gerente',
-    description: 'Gerencia sua própria rede de influenciadores(as)',
+    description: 'Gerencia sua própria rede de afiliados(as)',
   },
   {
     value: 'INTERMEDIARIO',
@@ -137,7 +137,7 @@ export default function AfiliadoDetailDrawer({ user, open, onClose, prod, onUpda
   if (!user) return null
 
   const statusInfo = STATUS_STYLE[user.status_aprovacao] ?? STATUS_STYLE.PENDENTE
-  const currentRole = user.user_roles[0]?.role ?? 'INFLUENCER'
+  const currentRole = user.user_roles[0]?.role ?? 'AFILIADO'
   const apiId = user.user_roles[0]?.ref_code ?? '—'
   const parentGerente = user.users_users_id_gerenteTousers?.nome_completo
   const parentInter = user.users_users_id_intermediarioTousers?.nome_completo

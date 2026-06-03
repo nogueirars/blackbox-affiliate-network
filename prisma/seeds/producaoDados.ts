@@ -25,8 +25,8 @@ export async function seedProducaoDados(prisma: PrismaClient) {
 
   const roleInt = await prisma.user_roles.findFirst({ where: { id_usuario: intermediario.id, role: 'INTERMEDIARIO' } })
   const roleGer = await prisma.user_roles.findFirst({ where: { id_usuario: gerente.id, role: 'GERENTE' } })
-  const roleInf1 = await prisma.user_roles.findFirst({ where: { id_usuario: influencer1.id, role: 'INFLUENCER' } })
-  const roleInf2 = await prisma.user_roles.findFirst({ where: { id_usuario: influencer2.id, role: 'INFLUENCER' } })
+  const roleInf1 = await prisma.user_roles.findFirst({ where: { id_usuario: influencer1.id, role: 'AFILIADO' } })
+  const roleInf2 = await prisma.user_roles.findFirst({ where: { id_usuario: influencer2.id, role: 'AFILIADO' } })
 
   if (!roleInt || !roleGer || !roleInf1 || !roleInf2) {
     console.error('Roles de usuários não encontradas.')

@@ -165,7 +165,7 @@ export default function ContratosClient({
           <div className="flex gap-1 p-1 bg-[var(--color-surface-container)] rounded-xl border border-[var(--color-outline-variant)]">
             {([
               { key: '', label: 'Todos os tipos' },
-              { key: 'INFLUENCER', label: 'Influenciador' },
+              { key: 'AFILIADO', label: 'Afiliado' },
               { key: 'INTERMEDIARIO', label: 'Intermediário' },
               { key: 'GERENTE', label: 'Gerente' },
             ] as const).map(r => {

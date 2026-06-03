@@ -3,16 +3,16 @@
 import { useRef, useState } from 'react'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 
-interface Influenciador {
+interface Afiliado {
   id: string
   nome_completo: string
 }
 
 interface ProducaoFiltersProps {
-  influenciadores: Influenciador[]
+  afiliados: Afiliado[]
   casas: [string, string][]
   periodo: string
-  filterInfluenciador?: string
+  filterAfiliado?: string
   filterCasa?: string
   agrupamento?: string
   dataInicio?: string
@@ -20,10 +20,10 @@ interface ProducaoFiltersProps {
 }
 
 export function ProducaoFilters({
-  influenciadores,
+  afiliados,
   casas,
   periodo,
-  filterInfluenciador,
+  filterAfiliado,
   filterCasa,
   agrupamento = 'diaria',
   dataInicio,
@@ -177,16 +177,16 @@ export function ProducaoFilters({
           </span>
         </div>
 
-        {/* Influenciador Dropdown */}
+        {/* Afiliado Dropdown */}
         <div className="relative">
           <select
-            name="influenciador"
-            value={filterInfluenciador ?? ''}
+            name="afiliado"
+            value={filterAfiliado ?? ''}
             onChange={handleSelectChange}
             className="appearance-none bg-[var(--color-surface-container)] border border-[var(--color-outline-variant)] rounded-lg px-3 py-0 h-9 text-xs font-medium text-[var(--color-on-surface)] outline-none cursor-pointer pr-9 min-w-[180px] focus:border-[var(--color-primary)] transition-colors"
           >
-            <option value="">Todos os Influenciadores</option>
-            {influenciadores.map(g => (
+            <option value="">Todos os Afiliados</option>
+            {afiliados.map(g => (
               <option key={g.id} value={g.id}>{g.nome_completo}</option>
             ))}
           </select>
@@ -196,13 +196,13 @@ export function ProducaoFilters({
         </div>
 
         {/* Limpar filtros */}
-        {(filterInfluenciador || filterCasa) && (
+        {(filterAfiliado || filterCasa) && (
           <button 
             type="button"
             onClick={() => {
               const params = new URLSearchParams(searchParams.toString());
               params.delete('casa');
-              params.delete('influenciador');
+              params.delete('afiliado');
               params.delete('dataInicio');
               params.delete('dataFim');
               router.push(`${pathname}?${params.toString()}`, { scroll: false });

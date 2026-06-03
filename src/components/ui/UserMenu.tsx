@@ -11,7 +11,7 @@ const VIEW_BADGE_CLASS: Record<string, string> = {
   admin: 'badge-red',
   gerente: 'badge-orange',
   intermediario: 'badge-orange',
-  influenciador: 'badge-gray',
+  afiliado: 'badge-gray',
 }
 
 const VIEW_ICON: Record<string, React.ReactNode> = {
@@ -34,7 +34,7 @@ const VIEW_ICON: Record<string, React.ReactNode> = {
       <path d="M5 12l-2 2 2 2" />
     </svg>
   ),
-  influenciador: (
+  afiliado: (
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
       <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
     </svg>
@@ -45,7 +45,7 @@ const VIEW_ACCENT: Record<string, { bg: string; color: string; border: string }>
   admin:        { bg: 'rgba(239,68,68,0.12)',  color: '#f87171', border: 'rgba(239,68,68,0.25)' },
   gerente:      { bg: 'rgba(249,115,22,0.12)', color: '#fb923c', border: 'rgba(249,115,22,0.25)' },
   intermediario:{ bg: 'rgba(249,115,22,0.12)', color: '#fb923c', border: 'rgba(249,115,22,0.25)' },
-  influenciador:{ bg: 'rgba(148,163,184,0.12)',color: '#94a3b8', border: 'rgba(148,163,184,0.25)' },
+  afiliado:{ bg: 'rgba(148,163,184,0.12)',color: '#94a3b8', border: 'rgba(148,163,184,0.25)' },
 }
 
 interface UserMenuProps {

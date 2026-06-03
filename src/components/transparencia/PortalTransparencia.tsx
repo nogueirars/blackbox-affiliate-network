@@ -20,7 +20,7 @@ type CasaProps = {
 }
 
 type Props = {
-  profile: 'influenciador' | 'gerente' | 'intermediario'
+  profile: 'afiliado' | 'gerente' | 'intermediario'
   data: CasaProps[]
 }
 
@@ -115,7 +115,7 @@ export function PortalTransparencia({ profile, data }: Props) {
       )}
 
       {/* ── Visão da Rede (gerente/intermediario) ─────────────────────── */}
-      {profile !== 'influenciador' && (
+      {profile !== 'afiliado' && (
         <div className="rounded-xl border overflow-hidden" style={{ borderColor: 'rgba(185,112,255,0.3)', background: 'var(--color-surface-container-low)' }}>
           <div className="px-5 py-3 border-b" style={{ borderColor: 'rgba(185,112,255,0.2)' }}>
             <div className="flex items-center gap-2">
@@ -332,11 +332,11 @@ function VigenciaCard({ vig, profile }: { vig: any; profile: string }) {
       </div>
 
       {/* Métricas da vigência */}
-      <div className={`grid gap-0 divide-x ${profile !== 'influenciador' ? 'grid-cols-4' : 'grid-cols-2'}`}
+      <div className={`grid gap-0 divide-x ${profile !== 'afiliado' ? 'grid-cols-4' : 'grid-cols-2'}`}
            style={{ borderColor: 'var(--color-outline-variant)' }}>
         <VigMetric label="Dias ativos" value={String(vig.dias_count)} />
         <VigMetric label="CPAs" value={String(vig.total_cpas)} />
-        {profile !== 'influenciador' && (
+        {profile !== 'afiliado' && (
           <>
             <VigMetric label="Lucro Rede" value={brl(vig.lucro_rede)} accent="#4CAF50" />
             <VigMetric label="Repasse" value={brl(vig.repasse_rede)} />

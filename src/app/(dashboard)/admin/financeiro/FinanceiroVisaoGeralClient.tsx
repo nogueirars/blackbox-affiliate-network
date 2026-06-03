@@ -168,11 +168,11 @@ export default function FinanceiroVisaoGeralClient(props: Props) {
         </div>
       )}
 
-      {/* ── Rede de Influenciadores ─────────────────────────────────────────── */}
-      <Section icon="👥" title="Rede de Influenciadores">
+      {/* ── Rede de Afiliados ─────────────────────────────────────────── */}
+      <Section icon="👥" title="Rede de Afiliados">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <StatCard label="Influenciadores Diretos" value={countInfluencer.toLocaleString('pt-BR')}   icon="person" accent="#0275F3" />
-          <StatCard label="Sub-Influenciadores"     value={countIntermediario.toLocaleString('pt-BR')} icon="group"  accent="#8B5CF6" />
+          <StatCard label="Afiliados Diretos" value={countInfluencer.toLocaleString('pt-BR')}   icon="person" accent="#0275F3" />
+          <StatCard label="Sub-Afiliados"     value={countIntermediario.toLocaleString('pt-BR')} icon="group"  accent="#8B5CF6" />
           <StatCard label="Gerentes"                value={countGerente.toLocaleString('pt-BR')}      icon="manage_accounts" accent="#8B5CF6"
             extra={
               <Link href="/admin/financeiro/gerentes" className="text-xs font-semibold mt-1" style={{ color: 'var(--color-primary)' }}>
@@ -278,9 +278,9 @@ export default function FinanceiroVisaoGeralClient(props: Props) {
         </div>
       </Section>
 
-      {/* ── Saldos dos Influenciadores ──────────────────────────────────────── */}
-      <Section icon="$" title="Saldos dos Influenciadores"
-        sub="Gerencie pagamentos para influenciadores diretos e sub-influenciadores">
+      {/* ── Saldos dos Afiliados ──────────────────────────────────────── */}
+      <Section icon="$" title="Saldos dos Afiliados"
+        sub="Gerencie pagamentos para afiliados diretos e sub-afiliados">
         {/* Info banner */}
         <div className="flex items-start gap-3 rounded-xl px-4 py-3 mb-4"
           style={{ background: '#3b0764', border: '1px solid #7c3aed44' }}>
@@ -302,7 +302,7 @@ export default function FinanceiroVisaoGeralClient(props: Props) {
             type="text"
             value={search}
             onChange={e => setSearch(e.target.value)}
-            placeholder="Buscar influenciador por nome ou e-mail..."
+            placeholder="Buscar afiliado por nome ou e-mail..."
             className="w-full pl-9 pr-4 py-2.5 rounded-xl text-sm outline-none transition-all"
             style={{ background: 'var(--color-surface-container-lowest)', border: '1px solid var(--color-outline-variant)', color: 'var(--color-on-surface)' }}
           />
@@ -314,7 +314,7 @@ export default function FinanceiroVisaoGeralClient(props: Props) {
           <table className="w-full text-sm">
             <thead style={{ background: 'var(--color-surface-container-low)', borderBottom: '1px solid var(--color-outline-variant)' }}>
               <tr>
-                {['Influenciador', 'Tipo', 'Total Comissão Liberada', 'Total Comissão Paga', 'Saldo', 'Ações'].map(h => (
+                {['Afiliado', 'Tipo', 'Total Comissão Liberada', 'Total Comissão Paga', 'Saldo', 'Ações'].map(h => (
                   <th key={h} className="text-left px-4 py-3 text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--color-on-surface-variant)' }}>
                     {h}
                   </th>
@@ -325,7 +325,7 @@ export default function FinanceiroVisaoGeralClient(props: Props) {
               {filteredInfluencers.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="px-4 py-8 text-center text-sm text-[var(--color-on-surface-variant)]">
-                    {influencers.length === 0 ? 'Nenhum influenciador cadastrado' : 'Nenhum resultado'}
+                    {influencers.length === 0 ? 'Nenhum afiliado cadastrado' : 'Nenhum resultado'}
                   </td>
                 </tr>
               ) : filteredInfluencers.map(inf => (
@@ -416,7 +416,7 @@ export default function FinanceiroVisaoGeralClient(props: Props) {
             <table className="w-full text-sm">
               <thead style={{ background: 'var(--color-surface-container-low)', borderBottom: '1px solid var(--color-outline-variant)' }}>
                 <tr>
-                  {['Influenciador', 'Casa', 'Produção (R$)', 'Já Pago (R$)', 'A Receber (R$)'].map(h => (
+                  {['Afiliado', 'Casa', 'Produção (R$)', 'Já Pago (R$)', 'A Receber (R$)'].map(h => (
                     <th key={h} className="text-left px-4 py-3 text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'var(--color-on-surface-variant)' }}>{h}</th>
                   ))}
                 </tr>

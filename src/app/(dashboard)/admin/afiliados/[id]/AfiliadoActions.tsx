@@ -3,7 +3,7 @@
 import { useState } from 'react'
 
 const ROLES = [
-  { value: 'INFLUENCER',    label: 'Influenciador' },
+  { value: 'AFILIADO',    label: 'Afiliado' },
   { value: 'GERENTE',       label: 'Gerente' },
   { value: 'INTERMEDIARIO', label: 'Intermediário' },
   { value: 'ADMIN',         label: 'Admin' },

@@ -10,10 +10,10 @@ interface FilterBarProps {
 
 const ROLE_OPTIONS = [
   { value: '',              label: 'Todos os perfis' },
-  { value: 'INFLUENCER',   label: 'Influenciador' },
+  { value: 'AFILIADO',   label: 'Afiliado' },
   { value: 'GERENTE',      label: 'Gerente' },
   { value: 'INTERMEDIARIO',label: 'Intermediário' },
-  { value: 'ADMIN',        label: 'Admin' },
+  { value: 'ADMIN',        label: 'Agência' },
 ]
 
 export default function FilterBar({ roleFilter, q, action }: FilterBarProps) {

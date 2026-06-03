@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { getSaldoInfluenciador } from '@/lib/finance/saldo-influenciador'
+import { getSaldoAfiliado } from '@/lib/finance/saldo-afiliado'
 import { getSaldoGerente } from '@/lib/finance/saldo-gerente'
 import { getSaldoIntermediario } from '@/lib/finance/saldo-intermediario'
 import { createSaque, getSaquesByAfiliado, getSaquesAdmin } from '@/services/saques.service'
@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Admin não pode solicitar saque' }, { status: 400 })
   }
 
-  const role = (user.app_metadata?.role ?? 'influenciador') as string
+  const role = (user.app_metadata?.role ?? 'afiliado') as string
 
   let body: {
     cnpj: string
@@ -60,8 +60,8 @@ export async function POST(req: NextRequest) {
   let saldoDisponivel = 0
   try {
     const r = role.toUpperCase()
-    if (r === 'INFLUENCER' || r === 'INFLUENCIADOR') {
-      const s = await getSaldoInfluenciador(user.id)
+    if (r === 'AFILIADO' || r === 'INFLUENCIADOR') {
+      const s = await getSaldoAfiliado(user.id)
       saldoDisponivel = s.saldo_disponivel
     } else if (r === 'GERENTE') {
       const s = await getSaldoGerente(user.id)

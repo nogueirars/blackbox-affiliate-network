@@ -31,7 +31,7 @@ export const gerenteNav: RoleNavConfig = [
   {
     sectionLabel: 'Gestão',
     items: [
-      { type: 'item', href: '/gerente/sub-afiliados', label: 'Influenciadores', icon: 'afiliados' },
+      { type: 'item', href: '/gerente/sub-afiliados', label: 'Afiliados', icon: 'afiliados' },
       { type: 'item', href: '/gerente/campanhas', label: 'Campanhas', icon: 'campanhas' },
       { type: 'item', href: '/gerente/acordos', label: 'Acordos', icon: 'contratos' },
       { type: 'item', href: '/gerente/producao', label: 'Produção', icon: 'producao' },
@@ -76,7 +76,7 @@ export const intermediarioNav: RoleNavConfig = [
   },
 ]
 
-export const influenciadorNav: RoleNavConfig = [
+export const afiliadoNav: RoleNavConfig = [
   {
     items: [
       { type: 'item', href: '/dashboard', label: 'Dashboard', icon: 'dashboard' },
@@ -85,17 +85,17 @@ export const influenciadorNav: RoleNavConfig = [
   {
     sectionLabel: 'Minha Conta',
     items: [
-      { type: 'item', href: '/influenciador/contratos', label: 'Contratos', icon: 'contratos' },
-      { type: 'item', href: '/influenciador/producao', label: 'Produção', icon: 'producao' },
-      { type: 'item', href: '/influenciador/financeiro', label: 'Financeiro', icon: 'financeiro' },
-      { type: 'item', href: '/influenciador/programas-incentivo', label: 'Incentivos', icon: 'incentivos' },
+      { type: 'item', href: '/afiliado/contratos', label: 'Contratos', icon: 'contratos' },
+      { type: 'item', href: '/afiliado/producao', label: 'Produção', icon: 'producao' },
+      { type: 'item', href: '/afiliado/financeiro', label: 'Financeiro', icon: 'financeiro' },
+      { type: 'item', href: '/afiliado/programas-incentivo', label: 'Incentivos', icon: 'incentivos' },
     ],
   },
   {
     sectionLabel: 'Mais',
     items: [
-      { type: 'item', href: '/influenciador/materiais', label: 'Materiais', icon: 'materiais' },
-      { type: 'item', href: '/influenciador/transparencia', label: 'Transparência', icon: 'transparencia' },
+      { type: 'item', href: '/afiliado/materiais', label: 'Materiais', icon: 'materiais' },
+      { type: 'item', href: '/afiliado/transparencia', label: 'Transparência', icon: 'transparencia' },
     ],
   },
 ]
@@ -104,17 +104,17 @@ export const influenciadorNav: RoleNavConfig = [
 export const NAV_BY_VIEW: Record<string, RoleNavConfig> = {
   gerente: gerenteNav,
   intermediario: intermediarioNav,
-  influenciador: influenciadorNav,
+  afiliado: afiliadoNav,
 }
 
 export const VIEW_DISPLAY_LABEL: Record<string, string> = {
-  admin: 'Admin',
+  admin: 'Agência',
   gerente: 'Gerente',
   intermediario: 'Intermediário',
-  influenciador: 'Influenciador',
+  afiliado: 'Afiliado',
 }
 
 // Legacy aliases — kept for any remaining callers during migration
 export const NAV_BY_ROLE = NAV_BY_VIEW
 export const ROLE_DISPLAY_LABEL = VIEW_DISPLAY_LABEL
-export const NON_ADMIN_ROLES = ['intermediario', 'gerente', 'influenciador'] as const
+export const NON_ADMIN_ROLES = ['intermediario', 'gerente', 'afiliado'] as const

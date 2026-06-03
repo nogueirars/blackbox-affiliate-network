@@ -19,7 +19,7 @@ export default async function AdminTransparenciaPage({
   const { profile } = await searchParams
 
   // Determine which profile to load if not explicitly provided
-  let activeProfile: ProfileType = (profile as ProfileType) || 'influenciador'
+  let activeProfile: ProfileType = (profile as ProfileType) || 'afiliado'
   let isAdmin = false
   let data: Awaited<ReturnType<typeof getTransparenciaData>> | null = null
 
@@ -39,7 +39,7 @@ export default async function AdminTransparenciaPage({
 
       if (targetRoles.some(r => r.role === 'GERENTE')) activeProfile = 'gerente'
       else if (targetRoles.some(r => r.role === 'INTERMEDIARIO')) activeProfile = 'intermediario'
-      else activeProfile = 'influenciador'
+      else activeProfile = 'afiliado'
     }
 
     if (isAdmin) {

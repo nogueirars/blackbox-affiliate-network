@@ -5,7 +5,7 @@ import { user_role } from '@prisma/client'
 // Mapa: papel de quem convida → papel que o novo usuário terá
 const ROLE_INVITE_MAP: Partial<Record<user_role, user_role>> = {
   INTERMEDIARIO: 'GERENTE',
-  GERENTE: 'INFLUENCER',
+  GERENTE: 'AFILIADO',
 }
 
 export async function GET(

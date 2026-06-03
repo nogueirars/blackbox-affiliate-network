@@ -12,14 +12,14 @@ interface ProfileCardActionsProps {
 
 const ROLE_OPTIONS = [
   {
-    value: 'INFLUENCER',
-    label: 'Influenciador(a)',
-    description: 'Acesso ao painel de influenciador(a) com produção própria',
+    value: 'AFILIADO',
+    label: 'Afiliado(a)',
+    description: 'Acesso ao painel de afiliado(a) com produção própria',
   },
   {
     value: 'GERENTE',
     label: 'Gerente',
-    description: 'Gerencia sua própria rede de influenciadores(as)',
+    description: 'Gerencia sua própria rede de afiliados(as)',
   },
   {
     value: 'INTERMEDIARIO',

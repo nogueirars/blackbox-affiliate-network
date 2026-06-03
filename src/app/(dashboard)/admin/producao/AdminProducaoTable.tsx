@@ -122,7 +122,7 @@ export function AdminProducaoTable({ visao, rows, totals }: Props) {
     })
   }
 
-  if (visao === 'influenciador') {
+  if (visao === 'afiliado') {
     columns.push({
       header: 'Rec. Calc.',
       headerClassName: 'text-right',
@@ -173,7 +173,7 @@ export function AdminProducaoTable({ visao, rows, totals }: Props) {
       {visao === 'geral' && (
         <td className="px-5 py-4 text-sm font-bold tabular-nums text-right" style={{ color: '#c084fc' }}>{fmt(totals.receita_bruta ?? 0)}</td>
       )}
-      {visao === 'influenciador' && (
+      {visao === 'afiliado' && (
         <td className="px-5 py-4 text-sm font-bold tabular-nums text-right" style={{ color: '#22D3A5' }}>{fmt(totals.receita_total_calculada ?? 0)}</td>
       )}
       {visao === 'gerente' && (

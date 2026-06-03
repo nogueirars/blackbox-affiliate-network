@@ -61,7 +61,7 @@ export default function ProducaoFilters({
       <div className="flex items-center gap-2 flex-wrap">
         {[
           { id: 'geral', label: 'Visão Geral', icon: 'bar_chart' },
-          { id: 'influenciador', label: 'Influenciadores', icon: 'groups' },
+          { id: 'afiliado', label: 'Afiliados', icon: 'groups' },
           { id: 'gerente', label: 'Gerentes', icon: 'manage_accounts' },
           { id: 'intermediario', label: 'Intermediários', icon: 'account_tree' },
         ].map(t => (

@@ -1,9 +1,9 @@
 // ─── Roles ────────────────────────────────────────────────────────────────────
 // DB/JWT enum values (uppercase)
-export type Role = 'INFLUENCER' | 'GERENTE' | 'INTERMEDIARIO' | 'ADMIN'
+export type Role = 'AFILIADO' | 'GERENTE' | 'INTERMEDIARIO' | 'ADMIN'
 
 // UI-facing lowercase keys used in nav/labels
-export type RoleKey = 'influenciador' | 'gerente' | 'intermediario' | 'admin'
+export type RoleKey = 'afiliado' | 'gerente' | 'intermediario' | 'admin'
 
 // ─── Status financeiro ────────────────────────────────────────────────────────
 export type StatusFinanceiro = 'liberado' | 'parcial_liberado' | 'pendente_liberacao'
@@ -43,7 +43,7 @@ export interface Contrato {
 }
 
 // ─── Saldo results ────────────────────────────────────────────────────────────
-export interface SaldoInfluenciador {
+export interface SaldoAfiliado {
   influenciador_id: string
   comissao_bruta: number
   pag_recebidos: number

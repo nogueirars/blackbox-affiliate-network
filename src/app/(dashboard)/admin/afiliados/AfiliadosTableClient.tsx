@@ -47,14 +47,14 @@ interface Props {
 }
 
 const ROLE_LABEL: Record<string, string> = {
-  INFLUENCER: 'Influenciador',
+  AFILIADO: 'Afiliado',
   INTERMEDIARIO: 'Intermediário',
   GERENTE: 'Gerente',
   ADMIN: 'Admin',
 }
 
 const ROLE_BADGE_STYLE: Record<string, { bg: string; color: string }> = {
-  INFLUENCER: { bg: 'rgba(148,163,184,0.12)', color: '#94a3b8' },
+  AFILIADO: { bg: 'rgba(148,163,184,0.12)', color: '#94a3b8' },
   GERENTE: { bg: 'rgba(2,117,243,0.12)', color: '#0275F3' },
   INTERMEDIARIO: { bg: 'rgba(251,146,60,0.12)', color: '#fb923c' },
   ADMIN: { bg: 'rgba(239,68,68,0.12)', color: '#ef4444' },

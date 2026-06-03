@@ -3,7 +3,7 @@ import { SupabaseClient } from '@supabase/supabase-js'
 
 const TEST_PASSWORD = 'Orbit@2026'
 
-type SeedRole = 'INFLUENCER' | 'INTERMEDIARIO' | 'GERENTE' | 'ADMIN'
+type SeedRole = 'AFILIADO' | 'INTERMEDIARIO' | 'GERENTE' | 'ADMIN'
 
 const USERS: {
   email: string
@@ -19,7 +19,7 @@ const USERS: {
     cpf: '123.456.789-09',
     data_nascimento: new Date('1990-01-01'),
     telefone: '11900000001',
-    roles: ['INFLUENCER'],
+    roles: ['AFILIADO'],
   },
   {
     email: 'influencer2@orbit.dev',
@@ -27,7 +27,7 @@ const USERS: {
     cpf: '223.456.789-09',
     data_nascimento: new Date('1990-01-01'),
     telefone: '11900000005',
-    roles: ['INFLUENCER'],
+    roles: ['AFILIADO'],
   },
   {
     email: 'intermediario@orbit.dev',
@@ -51,7 +51,7 @@ const USERS: {
     cpf: '000.000.001-91',
     data_nascimento: new Date('1990-01-04'),
     telefone: '11900000004',
-    roles: ['ADMIN', 'INFLUENCER', 'INTERMEDIARIO', 'GERENTE'],
+    roles: ['ADMIN', 'AFILIADO', 'INTERMEDIARIO', 'GERENTE'],
   },
 ]
 

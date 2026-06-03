@@ -4,7 +4,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 
 const DB_ROLE_MAP: Record<string, string> = {
   ADMIN: 'ADMIN',
-  INFLUENCER: 'INFLUENCER',
+  AFILIADO: 'AFILIADO',
   INTERMEDIARIO: 'INTERMEDIARIO',
   GERENTE: 'GERENTE',
 }
@@ -100,7 +100,7 @@ export async function proxy(request: NextRequest) {
       return NextResponse.redirect(new URL('/dashboard', request.url))
     }
 
-    if (pathname.startsWith('/influenciador') && !has('INFLUENCER', 'ADMIN')) {
+    if (pathname.startsWith('/afiliado') && !has('AFILIADO', 'ADMIN')) {
       return NextResponse.redirect(new URL('/dashboard', request.url))
     }
 

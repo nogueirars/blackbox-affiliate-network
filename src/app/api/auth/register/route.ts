@@ -7,7 +7,7 @@ import { user_role } from '@prisma/client'
 
 const ROLE_INVITE_MAP: Partial<Record<user_role, user_role>> = {
   INTERMEDIARIO: 'GERENTE',
-  GERENTE: 'INFLUENCER',
+  GERENTE: 'AFILIADO',
 }
 
 export async function POST(req: NextRequest) {
@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Campos obrigatórios faltando.' }, { status: 400 })
   }
 
-  let papelDestino: user_role = 'INFLUENCER'
+  let papelDestino: user_role = 'AFILIADO'
   let idGerente: string | null = null
   let idIntermediario: string | null = null
 
@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
 
     papelDestino = destino
     const idConvidante = userRole.users.id
-    if (papelDestino === 'INFLUENCER') idGerente = idConvidante
+    if (papelDestino === 'AFILIADO') idGerente = idConvidante
     else if (papelDestino === 'GERENTE') idIntermediario = idConvidante
   }
 

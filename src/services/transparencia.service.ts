@@ -1,11 +1,11 @@
 import { prisma } from '@/lib/prisma'
 import { user_role } from '@prisma/client'
 
-export type ProfileType = 'influenciador' | 'gerente' | 'intermediario'
+export type ProfileType = 'afiliado' | 'gerente' | 'intermediario'
 
 export async function getTransparenciaData(userId: string, profile: ProfileType) {
   // 1. Get user roles
-  let role: user_role = 'INFLUENCER'
+  let role: user_role = 'AFILIADO'
   if (profile === 'gerente') role = 'GERENTE'
   if (profile === 'intermediario') role = 'INTERMEDIARIO'
 
@@ -22,7 +22,7 @@ export async function getTransparenciaData(userId: string, profile: ProfileType)
   // 3. Fetch from views based on profile
   let data: any[] = []
 
-  if (profile === 'influenciador') {
+  if (profile === 'afiliado') {
     data = await prisma.vw_producao_influencer.findMany({
       where: { id_contrato: { in: contratoIds } },
       orderBy: { data: 'desc' }
@@ -81,7 +81,7 @@ export async function getTransparenciaData(userId: string, profile: ProfileType)
     // Como a view retorna por dia e contrato, vamos adicionar ao array de vigencias/produção.
     casa.vigencias.push(row)
     
-    if (profile === 'influenciador') {
+    if (profile === 'afiliado') {
       casa.resumo.comissao_bruta += Number(row.receita_total_calculada || 0)
     } else if (profile === 'gerente') {
       casa.resumo.repasse_pago += Number(row.repasse_pago_total || 0)
@@ -153,7 +153,7 @@ function aggregateVigencias(vigencias: any[], profile: ProfileType) {
     ag.dias_count += 1
     ag.total_cpas += Number(v.cpas || 0)
     
-    if (profile === 'influenciador') {
+    if (profile === 'afiliado') {
       ag.total_comissao += Number(v.receita_total_calculada || 0)
     } else if (profile === 'gerente') {
       ag.total_comissao += (Number(v.repasse_pago_total || 0) + Number(v.lucro_liquido_total || 0))

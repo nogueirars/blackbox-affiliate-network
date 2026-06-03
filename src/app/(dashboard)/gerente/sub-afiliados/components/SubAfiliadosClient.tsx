@@ -109,7 +109,7 @@ export default function SubAfiliadosClient({ subAfiliados, refCode }: Props) {
           <h3 className="text-label-lg font-semibold text-[var(--color-on-surface)]">Link de Convite</h3>
         </div>
         <p className="text-body-sm text-[var(--color-on-surface-variant)]">
-          Compartilhe este link para convidar novos influenciadores à sua rede.
+          Compartilhe este link para convidar novos afiliados à sua rede.
         </p>
         {inviteLink ? (
           <div className="flex items-center gap-2">
@@ -186,7 +186,7 @@ export default function SubAfiliadosClient({ subAfiliados, refCode }: Props) {
               {filtered.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="text-center py-8 text-[var(--color-on-surface-variant)]">
-                    Nenhum influenciador encontrado.
+                    Nenhum afiliado encontrado.
                   </td>
                 </tr>
               ) : (

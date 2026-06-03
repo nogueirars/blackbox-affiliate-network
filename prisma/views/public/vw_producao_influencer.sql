@@ -87,7 +87,7 @@ FROM
     )
   )
 WHERE
-  (ur.role = 'INFLUENCER' :: user_role)
+  (ur.role = 'AFILIADO' :: user_role)
 GROUP BY
   pd.data,
   pd.id_casa,
