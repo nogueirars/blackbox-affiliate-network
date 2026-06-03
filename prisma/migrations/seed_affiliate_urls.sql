@@ -1,0 +1,22 @@
+-- Seed affiliate_url from partner_rows.json
+UPDATE public.casas_aposta SET affiliate_url = 'https://blackboxinf.com/?partner=586&afp=[afp]'                                                                        WHERE nome_exibicao ILIKE 'ApostaOnline';
+UPDATE public.casas_aposta SET affiliate_url = 'https://go.aff.bateu.bet.br/bf3fetxu?afp=[afp]'                                                                        WHERE nome_exibicao ILIKE 'BateuBet';
+UPDATE public.casas_aposta SET affiliate_url = 'https://go.aff.betaki.bet.br/epaqodug?afp=[afp]'                                                                        WHERE nome_exibicao ILIKE '%betaki%';
+UPDATE public.casas_aposta SET affiliate_url = 'https://kg-br.com/C.ashx?btag=a_2000081b_10012c_&affid=3543&siteid=2000081&adid=10012&c=[afp]'                          WHERE nome_exibicao ILIKE 'Betano';
+UPDATE public.casas_aposta SET affiliate_url = 'https://go.aff.br4-partners.com/aybw0bn0?afp=[afp]'                                                                    WHERE nome_exibicao ILIKE 'Br4Bet';
+UPDATE public.casas_aposta SET affiliate_url = 'https://go.aff.donald.bet/pwl07k50?afp=[afp]'                                                                          WHERE nome_exibicao ILIKE 'DonaldBet';
+UPDATE public.casas_aposta SET affiliate_url = 'https://go.aff.afiliados.energia.bet.br/b2iiueb6?afp=[afp]'                                                            WHERE nome_exibicao ILIKE 'EnergiaBet';
+UPDATE public.casas_aposta SET affiliate_url = 'https://go.aff.esportiva.bet/5exoshqt?afp=[afp]'                                                                       WHERE nome_exibicao ILIKE '%esportiva%';
+UPDATE public.casas_aposta SET affiliate_url = 'https://go.aff.estrelabetpartners.com/s76us9a6?afp=[afp]'                                                              WHERE nome_exibicao ILIKE 'EstrelaBet';
+UPDATE public.casas_aposta SET affiliate_url = 'https://go.aff.geralbet.bet.br/aepq1gaa?afp=[afp]'                                                                     WHERE nome_exibicao ILIKE 'GeralBet';
+UPDATE public.casas_aposta SET affiliate_url = 'https://go.aff.ginga.bet.br/ub98dv31?afp=[afp]'                                                                        WHERE nome_exibicao ILIKE '%ginga%';
+UPDATE public.casas_aposta SET affiliate_url = 'https://go.aff.goldebet.bet.br/wtl1j0rp?afp=[afp]'                                                                     WHERE nome_exibicao ILIKE 'GoldeBet';
+UPDATE public.casas_aposta SET affiliate_url = 'http://blackboxinf.com/?partner=hanzbet&afp=[afp]'                                                                     WHERE nome_exibicao ILIKE 'HanzBet';
+UPDATE public.casas_aposta SET affiliate_url = 'https://go.aff.lotogreen.com/pzjksdg5?afp=[afp]'                                                                       WHERE nome_exibicao ILIKE 'LotoGreen';
+UPDATE public.casas_aposta SET affiliate_url = 'https://go.aff.mcgames.bet/bg7g1j4i?afp=[afp]'                                                                         WHERE nome_exibicao ILIKE 'McGames';
+UPDATE public.casas_aposta SET affiliate_url = 'https://go.aff.mmabet.bet.br/p14qhn7o?afp=[afp]'                                                                       WHERE nome_exibicao ILIKE 'MmaBet';
+UPDATE public.casas_aposta SET affiliate_url = 'https://blackboxinf.com/?partner=278&utm_source=BBox&afp=[afp]'                                                        WHERE nome_exibicao ILIKE 'MultiBet';
+UPDATE public.casas_aposta SET affiliate_url = 'https://wlsuperbet.adsrv.eacdn.com/C.ashx?btag=a_11266b_431c_&affid=815&siteid=11266&adid=431&c=[afp]'                 WHERE nome_exibicao ILIKE '%superbet%';
+UPDATE public.casas_aposta SET affiliate_url = 'https://go.aff.upbet.com/fh1mq459?afp=[afp]'                                                                          WHERE nome_exibicao ILIKE 'UpBet';
+UPDATE public.casas_aposta SET affiliate_url = 'https://go.aff.wjafiliado.com/wf017xf4?afp=[afp]'                                                                     WHERE nome_exibicao ILIKE '%wj%';
+UPDATE public.casas_aposta SET affiliate_url = 'https://go.aff.zeroum.bet/nnd2x55d?afp=[afp]'                                                                         WHERE nome_exibicao ILIKE 'ZeroUm';

@@ -1,0 +1,395 @@
+===========================================================
+AFFILIATE BUDDY LINK — REGRAS DE NEGÓCIO COMPLETAS
+Documento para reconstrução do sistema
+===========================================================
+
+
+═══════════════════════════════════════════════════════════
+1. HIERARQUIA DE USUÁRIOS
+═══════════════════════════════════════════════════════════
+
+4 níveis. O sistema tem dois nomes para cada perfil:
+nome legado (gravado no banco) → nome canônico (exibido na UI).
+
+  afiliado        → influenciador   (produz FTDs/cadastros)
+  afiliado_master → gerente         (gerencia influenciadores)
+  gerente         → intermediario   (gerencia gerentes)
+  admin           → admin           (administra o sistema)
+
+ATENÇÃO: a nomenclatura do banco está invertida em relação
+ao que faz sentido. No banco, "gerente" significa intermediario
+e "afiliado_master" significa gerente. Isso causou bugs.
+No novo sistema, use nomes consistentes desde o início.
+
+Regras de acesso:
+  - Admin: acesso total, pode impersonar qualquer usuário
+  - Intermediario: vê próprio saldo + saldos dos gerentes
+  - Gerente: vê própria produção + produção dos sub-afiliados
+  - Influenciador: vê apenas própria produção
+
+
+═══════════════════════════════════════════════════════════
+2. ESTRUTURA DE DADOS PRINCIPAL
+═══════════════════════════════════════════════════════════
+
+USUÁRIOS (profiles):
+  id, nome, email, status, master_id, gerente_id,
+  is_premium, monitoring_flag
+
+CASAS DE APOSTAS (casas_apostas):
+  id, nome, modelo_comissao (CPA | REVSHARE),
+  valor_cpa_casa, revshare_house,
+  tax_rate (padrão: 0.145 = 14,5%),
+  em_auditoria (boolean),
+  entidade_id (FK para entidade de faturamento)
+
+ENTIDADES DE FATURAMENTO (entidades_faturamento):
+  id, nome, cnpj
+  → cada entidade é uma "carteira" financeira separada
+
+CONTRATOS (versionados por data):
+  contratos_afiliados    → influenciador com casa
+  contratos_master       → gerente com casa
+  contratos_gerente      → intermediario com casa
+  contratos_sub_afiliados → gerente com sub-afiliado
+
+  Campos de contrato: casa_id, valor_cpa, percentual_revshare,
+                      data_inicio, data_fim (null = vigente)
+
+LINKS:
+  afiliados_master_sub   → liga influenciador ao gerente
+  gerentes_masters       → liga gerente ao intermediario
+
+PRODUÇÃO (producao_afiliados):
+  afiliado_id, casa_id, data_referencia,
+  cadastros, ftds, cpas,
+  receita (bruta), receita_revshare_casa (bruta, pré-imposto),
+  valor_depositado, comissao_total,
+  status_financeiro, data_liberacao
+
+PAGAMENTOS (pagamentos_afiliados):
+  afiliado_id, valor, tipo (pagamento | estornado),
+  tipo_perfil, entidade_id, casa_id, data_pagamento
+
+SAQUES (saques):
+  afiliado_id, valor, status, tipo_perfil, entidade_id,
+  snapshot_comissao_bruta, snapshot_repasse_devido,
+  snapshot_margem_liquida, snapshot_calculado_em
+
+
+═══════════════════════════════════════════════════════════
+3. MODELOS DE COMISSÃO
+═══════════════════════════════════════════════════════════
+
+MODELO CPA (Cost Per Acquisition):
+  Valor fixo por conversão (CPAs).
+  comissao_cpa = cpas × valor_cpa
+
+MODELO REVSHARE (Revenue Share):
+  Percentual da receita líquida (após imposto).
+  receita_liquida = receita_revshare_casa × (1 - tax_rate)
+  comissao_revshare = receita_liquida × (percentual_revshare / 100)
+
+IMPOSTO:
+  14,5% deduzido do revshare ANTES de calcular comissão.
+  Aplicado no campo receita_revshare_casa.
+  tax_rate está em casas_apostas por casa.
+
+COMISSÃO TOTAL POR LINHA DE PRODUÇÃO:
+  comissao = (cpas × valor_cpa) + (receita_revshare_liquida × percentual_revshare / 100)
+  Depois aplicar fator de liberação (ver seção 4).
+
+
+═══════════════════════════════════════════════════════════
+4. STATUS FINANCEIRO DA PRODUÇÃO
+═══════════════════════════════════════════════════════════
+
+Cada linha de produção tem um status_financeiro:
+
+  LIBERADO_SAQUE     → fator 1.0 → 100% disponível para saque
+  PARCIAL_LIBERADO   → fator 0.5 → 50% disponível, 50% bloqueado
+  PENDENTE_LIBERACAO → fator 0.0 → bloqueado, não entra no saldo
+
+REGRA DE LIBERAÇÃO (configurada por casa):
+  tipo_liberacao = 'diaria':  libera D+N dias após data_referencia
+  tipo_liberacao = 'semanal': libera no dia da semana configurado
+  tipo_liberacao = 'mensal':  libera no dia X do mês seguinte
+  data_inicio_regra: regras se aplicam a produções a partir dessa data
+
+EXECUÇÃO:
+  Função RPC processar_liberacao_producao() roda periodicamente
+  e atualiza status de PENDENTE para LIBERADO conforme regras.
+
+
+═══════════════════════════════════════════════════════════
+5. CÁLCULO DE SALDO — FÓRMULAS POR PERFIL
+═══════════════════════════════════════════════════════════
+
+─────────────────────────────────────────
+5A. INFLUENCIADOR
+─────────────────────────────────────────
+
+comissaoBruta = SUM(comissao_total × fatorStatus)
+                [apenas linhas não auditadas]
+
+pagRecebidos  = SUM(pagamentos WHERE tipo != 'estornado')
+estornos      = SUM(pagamentos WHERE tipo == 'estornado')
+totalConsumed = pagRecebidos + estornos
+saquesAtivos  = SUM(saques WHERE status em [pendente, aprovado, ...])
+
+saldo = comissaoBruta - totalConsumed - saquesAtivos
+
+─────────────────────────────────────────
+5B. GERENTE (master)
+─────────────────────────────────────────
+
+Gerente tem produção própria + rede de sub-afiliados.
+
+comissaoPropriaLiberada = SUM(calcComissao(producaoPropria) × fatorStatus)
+
+networkGrossLiberado = SUM(calcComissao(producaoSubs, contratoMaster) × fatorStatus)
+repasseSubsLiberado  = SUM(comissao_total_sub × fatorStatus)
+lucroRedeLiberado    = networkGrossLiberado - repasseSubsLiberado
+
+incentivo = comissão de programa de incentivo (se houver)
+
+margemLiquida = comissaoPropriaLiberada + lucroRedeLiberado + incentivo
+
+pagRecebidos  = SUM(pagamentos gerente WHERE tipo != 'estornado')
+estornos      = SUM(pagamentos gerente WHERE tipo == 'estornado')
+totalConsumed = pagRecebidos + estornos
+saquesAtivos  = SUM(saques ativos gerente)
+
+saldo = margemLiquida - totalConsumed - saquesAtivos
+
+IMPORTANTE: sub-afiliados usam comissao_total gravado no banco
+(não recalculado), para evitar divergências de arredondamento.
+
+─────────────────────────────────────────
+5C. INTERMEDIARIO (gerente no banco)
+─────────────────────────────────────────
+
+comissaoBruta = SUM(calcComissao(todaRede, contratoIntermedario) × fatorStatus)
+repasseDevido = SUM(calcComissao(todaRede, contratoMaster) × fatorStatus)
+
+CASCADE LOCK:
+  repasse_ao_master = MIN(valorContratoMaster, valorContratoIntermedario)
+  Intermediario nunca repassa mais do que ganha da casa.
+
+margemLiquida = comissaoBruta - repasseDevido
+
+pagRecebidos  = SUM(pagamentos intermediario)
+estornos      = SUM(estornos intermediario)
+saldo = margemLiquida - pagRecebidos - estornos - saquesAtivos
+
+
+═══════════════════════════════════════════════════════════
+6. ISOLAMENTO POR ENTIDADE (MULTI-CNPJ)
+═══════════════════════════════════════════════════════════
+
+Cada entidade de faturamento (CNPJ) é uma carteira separada.
+Um usuário pode ter casas vinculadas a CNPJs diferentes.
+
+REGRAS:
+  - Pagamento com entidade_id preenchido: deduz SOMENTE daquela carteira
+  - Pagamento com entidade_id nulo (legado): rateio proporcional
+  - Rateio = orfanConsumed × (liberadoEntidade / liberadoGlobal)
+  - Déficit de uma carteira NÃO reduz saldo de outra
+  - Déficit é exibido como negativo (transparência), não zerado
+
+SALDO POR ENTIDADE:
+  entityLib      = comissão liberada das casas desta entidade
+  entityConsumed = pagamentos desta entidade
+  orphanShare    = pagamentos legados × (entityLib / globalLib)
+  saquesAtivos   = saques ativos desta entidade + saques legados
+  saldo          = entityLib - entityConsumed - orphanShare - saquesAtivos
+
+SAQUE: entidade_id obrigatório na criação do saque.
+
+
+═══════════════════════════════════════════════════════════
+7. CASAS EM AUDITORIA
+═══════════════════════════════════════════════════════════
+
+Casa com em_auditoria = true:
+  - Produção dessa casa NÃO entra no saldo disponível
+  - Exibida em card separado "Em Auditoria"
+  - Não contamina saldo de outras casas da mesma entidade
+  - Permanece retida até auditoria ser encerrada pelo admin
+
+
+═══════════════════════════════════════════════════════════
+8. VERSIONAMENTO DE CONTRATOS
+═══════════════════════════════════════════════════════════
+
+Contrato ativo na data_referencia da produção determina o valor.
+
+ALGORITMO:
+  1. Filtrar contratos pelo casa_id
+  2. Ordenar por data_inicio DESC (mais recente primeiro)
+  3. Para cada contrato: se data_referencia >= data_inicio
+     E (data_fim IS NULL OU data_referencia < data_fim) → usar este
+  4. Se nenhum match: usar contrato mais antigo (fallback conservador)
+
+Isso garante que produção histórica usa o contrato vigente
+na época, mesmo que o contrato atual seja diferente.
+
+
+═══════════════════════════════════════════════════════════
+9. FLUXO DE SAQUE
+═══════════════════════════════════════════════════════════
+
+SOLICITAÇÃO (usuário):
+  1. Frontend exibe saldo disponível
+  2. Usuário clica "Solicitar Saque" e preenche dados da NF
+  3. Servidor recalcula saldo do zero (não confia no frontend)
+  4. Servidor cria saque com o valor que ele calculou
+  5. Saque reserva o saldo (impede dupla solicitação)
+
+VALIDAÇÕES NO SERVIDOR:
+  - Usuário autenticado e com contratos válidos
+  - saldo > 0
+  - Sem saque ativo para esta entidade
+  - entidade_id obrigatório se múltiplas entidades
+
+STATUS DO SAQUE:
+  pendente → aprovado → nf_pendente → nf_em_analise
+  → nf_enviada → aprovado_sem_nf → pago | rejeitado
+
+SAQUES ATIVOS (reservam saldo):
+  pendente, aprovado, nf_pendente, nf_em_analise,
+  nf_enviada, aprovado_sem_nf
+
+SNAPSHOT gravado no saque:
+  snapshot_comissao_bruta, snapshot_repasse_devido,
+  snapshot_margem_liquida, snapshot_calculado_em
+
+
+═══════════════════════════════════════════════════════════
+10. REGISTRO DE PAGAMENTO (admin)
+═══════════════════════════════════════════════════════════
+
+  - Apenas admin pode registrar pagamentos manualmente
+  - Campos obrigatórios: afiliado_id, valor, tipo_perfil, entidade_id
+  - Limite por transação: R$ 100.000 (configurável)
+  - Acima do limite: requer forcar_pagamento=true + nota ≥ 10 chars
+  - Bloqueia se saque ativo existir (evita duplo pagamento)
+  - Bloqueia se saldo insuficiente (salvo com força)
+  - Transação atômica com pg_advisory_xact_lock para evitar race condition
+
+TIPOS DE PAGAMENTO:
+  pagamento → saque normal pago
+  estornado → chargeback (SOMA ao consumido, reduz saldo disponível)
+
+ESTORNO NÃO É DEVOLUÇÃO:
+  Estorno significa que a casa cobrou de volta uma comissão.
+  Ele é tratado como débito adicional, não como redução do pagamento anterior.
+
+
+═══════════════════════════════════════════════════════════
+11. SINCRONIZAÇÃO DE PRODUÇÃO
+═══════════════════════════════════════════════════════════
+
+  - Dados vêm de APIs das casas de apostas (XML/CSV/JSON)
+  - Deduplicação por chave affcustomid|periodo
+  - Mapeamento de colunas configurável por casa
+  - Paginação em lotes de 1000 linhas
+  - comissao_total calculado e gravado durante o sync
+  - Postbacks recebidos em tempo real para eventos:
+      registro, ftd, cpa
+
+RECÁLCULO DE COMISSÕES:
+  Endpoint recalculate-commissions recalcula comissao_total
+  para um período, aplicando contratos vigentes na data.
+  Útil após alteração de contratos retroativos.
+
+CRON DIÁRIO:
+  1. sync-production (busca novos dados das APIs)
+  2. processar_liberacao_producao (libera produção pendente)
+  3. recalculate-commissions (recalcula comissões)
+
+
+═══════════════════════════════════════════════════════════
+12. PROGRAMA DE INCENTIVO
+═══════════════════════════════════════════════════════════
+
+  - Gerentes podem participar de programas de incentivo
+  - Comissão de incentivo vem de producao_incentivo
+  - Tem status_financeiro próprio (LIBERADO/PARCIAL/PENDENTE)
+  - Adicionado à margemLiquida do gerente
+  - Isolado por casa para cálculo por entidade
+
+
+═══════════════════════════════════════════════════════════
+13. BUG CONHECIDO (NÃO CORRIGIDO NESTE SISTEMA)
+═══════════════════════════════════════════════════════════
+
+Arquivo: src/hooks/useMasterFinanceiroData.ts
+
+BUG 1 — linha 249:
+  Sistema migrou tipo_perfil de 'master' para 'gerente'.
+  Pagamentos antigos têm tipo_perfil = 'master'.
+  Frontend busca só 'gerente' → não enxerga pagamentos antigos
+  → saldo exibido inflado pelo valor desses pagamentos.
+
+  CORREÇÃO:
+  .eq('tipo_perfil', 'gerente')
+  →
+  .in('tipo_perfil', ['gerente', 'master'])
+
+BUG 2 — linha 142 (saques ativos):
+  Mesmo problema para saques com tipo_perfil = 'master'.
+
+  CORREÇÃO:
+  .eq('tipo_perfil', 'gerente')
+  →
+  .in('tipo_perfil', ['gerente', 'master'])
+
+BUG 3 — linha 1020 (saldo por entidade):
+  saqueAtivoEntidade é calculado mas nunca subtraído do saldo.
+  Após saque criado, entidade ainda mostra valor cheio.
+
+  CORREÇÃO:
+  const consumidoEntidade = pagoEntidade + estornoEntidade + orphanShare;
+  →
+  const consumidoEntidade = pagoEntidade + estornoEntidade + orphanShare + saqueAtivoEntidade;
+
+  IMPACTO: apenas perfil Gerente/Master.
+
+
+═══════════════════════════════════════════════════════════
+14. RECOMENDAÇÕES PARA O NOVO SISTEMA
+═══════════════════════════════════════════════════════════
+
+1. USE NOMES CONSISTENTES desde o início.
+   Não renomeie perfis após ter dados em produção.
+   Evita a necessidade de aliases e o bug acima.
+
+2. SERVIDOR É ÚNICA FONTE DE VERDADE DO SALDO.
+   Frontend exibe, servidor decide.
+   Nunca confie no valor enviado pelo frontend para criar saque.
+
+3. SALDO POR ENTIDADE obrigatório desde o design inicial.
+   Multi-CNPJ é comum em sistemas de afiliados.
+
+4. ESTORNOS são débitos, não créditos.
+   Grave separado de pagamentos normais para clareza.
+
+5. VERSIONAMENTO DE CONTRATOS é essencial.
+   Produção histórica deve usar contrato da época.
+
+6. LOCK DE CONCORRÊNCIA no registro de pagamento.
+   Race condition real em sistemas com múltiplos admins.
+
+7. STATUS FINANCEIRO da produção deve ser calculado
+   por regra configurável por casa, não hard-coded.
+
+8. AUDITORIA de casas deve isolar completamente
+   a produção afetada sem contaminar outras casas.
+
+9. COMISSÃO DO SUB use comissao_total gravado no banco,
+   não recalcule na hora. Evita divergências.
+
+10. ALIASES DE TIPO_PERFIL: se migrar nomes,
+    atualize TODOS os lugares de query simultaneamente.
+    Uma função centralizada de aliases previne bugs.

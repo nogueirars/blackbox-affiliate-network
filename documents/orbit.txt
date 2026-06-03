@@ -1,0 +1,194 @@
+===========================================================
+ORBIT — AFFILIATE NETWORK
+Design System & Identity
+===========================================================
+
+
+═══════════════════════════════════════════════════════════
+NOME
+═══════════════════════════════════════════════════════════
+
+  Nome:     ORBIT
+  Tagline:  Sua rede. Seu centro.
+  Sub:      Affiliate Network
+
+  Lógica do nome:
+    Cada afiliado orbita ao redor de um gerente.
+    Cada gerente orbita ao redor de um intermediario.
+    Tudo gravita em torno da produção e do resultado.
+    O nome remete a movimento, hierarquia natural e ecossistema.
+
+
+═══════════════════════════════════════════════════════════
+PALETA DE CORES
+═══════════════════════════════════════════════════════════
+
+  BASES:
+    --color-bg-base      #080C1A   ← fundo principal (quase preto azulado)
+    --color-bg-surface   #0F1628   ← cards e painéis
+    --color-bg-elevated  #162040   ← hover states, modais
+    --color-bg-overlay   #1E2D55   ← dropdowns, tooltips
+
+  ACENTO PRINCIPAL:
+    --color-accent       #4D7EFF   ← azul elétrico (CTAs, links, highlights)
+    --color-accent-hover #6B96FF   ← hover do acento
+    --color-accent-muted #4D7EFF26 ← acento com opacidade (badges, backgrounds)
+
+  TEXTO:
+    --color-text-primary  #E8EEFF  ← texto principal
+    --color-text-secondary #8A9CC8 ← texto secundário, labels
+    --color-text-muted    #4A5B82  ← placeholders, desabilitado
+
+  SEMÂNTICAS:
+    --color-success       #22D3A5  ← saldo positivo, liberado, pago
+    --color-success-muted #22D3A526
+    --color-warning       #F59E0B  ← pendente, em análise
+    --color-warning-muted #F59E0B26
+    --color-danger        #F43F5E  ← déficit, rejeitado, estorno
+    --color-danger-muted  #F43F5E26
+    --color-audit         #A78BFA  ← casa em auditoria (roxo neutro)
+    --color-audit-muted   #A78BFA26
+
+  BORDAS:
+    --color-border        #1E2D55  ← bordas padrão
+    --color-border-accent #4D7EFF40 ← bordas com destaque
+
+
+═══════════════════════════════════════════════════════════
+TIPOGRAFIA
+═══════════════════════════════════════════════════════════
+
+  Fonte principal:  Inter (sans-serif, leitura de dados)
+  Fonte mono:       JetBrains Mono (valores financeiros, IDs)
+
+  Escala:
+    --text-xs    11px / 1.4
+    --text-sm    13px / 1.5
+    --text-base  15px / 1.6
+    --text-lg    18px / 1.4
+    --text-xl    22px / 1.3
+    --text-2xl   28px / 1.2
+    --text-3xl   36px / 1.1
+
+  Valores monetários: sempre JetBrains Mono, weight 600
+  Labels e métricas: Inter weight 500
+  Títulos de seção: Inter weight 700, letter-spacing -0.02em
+
+
+═══════════════════════════════════════════════════════════
+COMPONENTES DE SALDO (padrão visual)
+═══════════════════════════════════════════════════════════
+
+  CARD DE SALDO DISPONÍVEL:
+    Background: --color-bg-surface
+    Borda: 1px solid --color-border-accent
+    Borda superior: 3px solid --color-accent
+    Valor: --text-3xl, --color-success, JetBrains Mono
+
+  CARD DE SALDO NEGATIVO (déficit):
+    Borda superior: 3px solid --color-danger
+    Valor: --color-danger
+
+  CARD EM AUDITORIA:
+    Borda superior: 3px solid --color-audit
+    Badge: background --color-audit-muted, texto --color-audit
+
+  BADGE DE STATUS SAQUE:
+    pendente:       background warning-muted, texto warning
+    aprovado:       background accent-muted, texto accent
+    pago:           background success-muted, texto success
+    rejeitado:      background danger-muted, texto danger
+    em análise:     background warning-muted, texto warning
+
+
+═══════════════════════════════════════════════════════════
+LOGO / ÍCONE
+═══════════════════════════════════════════════════════════
+
+  Símbolo: anel elíptico inclinado (órbita) com ponto central
+           representando o núcleo da rede.
+
+  Versões:
+    - Ícone alone (favicon, app icon): anel + ponto em #4D7EFF
+    - Logotipo horizontal: ícone + "ORBIT" em Inter 700
+    - Logotipo com tagline: + "Affiliate Network" em text-secondary
+
+  Gradiente do ícone:
+    De #4D7EFF para #22D3A5 (azul → verde, movimento/fluxo)
+
+
+═══════════════════════════════════════════════════════════
+TOKENS DE ESPAÇAMENTO
+═══════════════════════════════════════════════════════════
+
+  --space-1   4px
+  --space-2   8px
+  --space-3   12px
+  --space-4   16px
+  --space-5   20px
+  --space-6   24px
+  --space-8   32px
+  --space-10  40px
+  --space-12  48px
+  --space-16  64px
+
+  --radius-sm   6px
+  --radius-md   10px
+  --radius-lg   14px
+  --radius-xl   20px
+  --radius-full 9999px
+
+
+═══════════════════════════════════════════════════════════
+LAYOUT PADRÃO
+═══════════════════════════════════════════════════════════
+
+  Sidebar fixa (220px) + conteúdo principal
+  Sidebar: --color-bg-surface, borda direita --color-border
+  Header: 60px, --color-bg-surface
+
+  Grid de cards: 12 colunas, gap --space-4
+  Cards de saldo: coluna 4 (3 por linha no desktop)
+  Tabelas: largura total, linha zebra com --color-bg-elevated
+
+  Breakpoints:
+    mobile:  < 640px  → sidebar colapsada
+    tablet:  640-1024px
+    desktop: > 1024px
+
+
+═══════════════════════════════════════════════════════════
+NAVEGAÇÃO POR PERFIL
+═══════════════════════════════════════════════════════════
+
+  INFLUENCIADOR:
+    • Início (métricas)
+    • Financeiro (saldo + saque)
+    • Produção
+    • Histórico
+
+  GERENTE:
+    • Início
+    • Financeiro
+    • Minha Produção
+    • Minha Rede
+    • Histórico
+
+  INTERMEDIARIO:
+    • Início
+    • Financeiro
+    • Rede de Gerentes
+    • Histórico
+
+  ADMIN:
+    • Dashboard
+    • Usuários
+    • Contratos
+    • Produção
+    • Saques
+    • Pagamentos
+    • Casas de Apostas
+    • Entidades
+    • Programas de Incentivo
+    • Sincronização
+    • Logs
