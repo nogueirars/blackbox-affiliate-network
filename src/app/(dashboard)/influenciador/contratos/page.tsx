@@ -8,42 +8,49 @@ export default async function InfluenciadorContratosPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const publicUser = await prisma.public_users.findUnique({
-    where: { auth_id: user.id },
-    select: { id: true },
-  })
-
-  const contratos = publicUser
-    ? await prisma.contratos.findMany({
-        where: {
-          ativo: true,
-          user_roles: { id_usuario: publicUser.id, ativo: true },
-        },
+  const contratosQuery = (publicUserId: string) => prisma.contratos.findMany({
+    where: {
+      ativo: true,
+      user_roles: { id_usuario: publicUserId, ativo: true },
+    },
+    select: {
+      id: true,
+      afp: true,
+      link_afiliacao: true,
+      tipo_contrato: true,
+      created_at: true,
+      id_casa: true,
+      casas_aposta: { select: { id: true, nome_exibicao: true, icone_url: true, affiliate_url: true } },
+      historico_contratos: {
+        orderBy: { data_inicio: 'desc' },
         select: {
           id: true,
-          afp: true,
-          link_afiliacao: true,
-          tipo_contrato: true,
-          created_at: true,
-          id_casa: true,
-          casas_aposta: { select: { id: true, nome_exibicao: true, icone_url: true, affiliate_url: true } },
-          historico_contratos: {
-            orderBy: { data_inicio: 'desc' },
-            select: {
-              id: true,
-              data_inicio: true,
-              data_fim: true,
-              cpa_bruto: true,
-              aliquota_imposto: true,
-              revshare_percentual: true,
-              revshare_repasse: true,
-              ativo: true,
-            },
-          },
+          data_inicio: true,
+          data_fim: true,
+          cpa_bruto: true,
+          aliquota_imposto: true,
+          revshare_percentual: true,
+          revshare_repasse: true,
+          ativo: true,
         },
-        orderBy: { created_at: 'desc' },
-      })
-    : []
+      },
+    },
+    orderBy: { created_at: 'desc' },
+  })
+
+  let contratos: Awaited<ReturnType<typeof contratosQuery>> = []
+
+  try {
+    const publicUser = await prisma.public_users.findUnique({
+      where: { auth_id: user.id },
+      select: { id: true },
+    })
+
+    contratos = publicUser ? await contratosQuery(publicUser.id) : []
+  } catch (e) {
+    console.error('[influenciador/contratos] prisma error:', e)
+    contratos = []
+  }
 
   // Serialize Decimal/Date fields for client component
   const contratosSerial = contratos.map(c => ({

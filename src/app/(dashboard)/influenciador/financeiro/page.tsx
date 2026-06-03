@@ -58,88 +58,142 @@ export default async function InfluenciadorFinanceiroPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const publicUser = await prisma.public_users.findUnique({
-    where: { auth_id: user.id },
-    select: { id: true },
-  })
-
   const role = (user.app_metadata?.role ?? 'INFLUENCER') as string
 
-  // ── Contracts + casa + release rules ─────────────────────────────────────
-  const contratos = publicUser
-    ? await prisma.contratos.findMany({
-        where: {
-          ativo: true,
-          user_roles: { id_usuario: publicUser.id, ativo: true },
-        },
-        select: {
-          id: true,
-          afp: true,
-          tipo_contrato: true,
-          casas_aposta: {
-            select: {
-              id: true,
-              nome_exibicao: true,
-              historico_regras_casas: {
-                where: { ativo: true },
-                orderBy: { data_inicio: 'desc' },
-                take: 1,
-                select: { tipo_liberacao: true, delay_dias: true },
+  type ContratoRow = {
+    id: string
+    afp: string | null
+    tipo_contrato: string
+    casas_aposta: {
+      id: string
+      nome_exibicao: string
+      historico_regras_casas: { tipo_liberacao: string; delay_dias: number }[]
+    }
+  }
+  type SaqueItem = { id_casa: string; montante: Prisma.Decimal }
+  type SaqueRow = {
+    id: string
+    montante: Prisma.Decimal
+    status: string
+    pix_key: string | null
+    nota_fiscal: string | null
+    motivo_correcao_nf: string | null
+    correcao_nf_solicitada_em: Date | null
+    created_at: Date
+    efetivado_at: Date | null
+  }
+
+  let contratos: ContratoRow[] = []
+  let totalComissao = 0
+  let perContratoTotais: Array<{ id_contrato: string; receita_total: string }> = []
+  let saquesItensAtivos: SaqueItem[] = []
+  let saquesItensConcluidos: SaqueItem[] = []
+  let saques: SaqueRow[] = []
+
+  try {
+    const publicUser = await prisma.public_users.findUnique({
+      where: { auth_id: user.id },
+      select: { id: true },
+    })
+
+    // ── Contracts + casa + release rules ─────────────────────────────────────
+    contratos = publicUser
+      ? await prisma.contratos.findMany({
+          where: {
+            ativo: true,
+            user_roles: { id_usuario: publicUser.id, ativo: true },
+          },
+          select: {
+            id: true,
+            afp: true,
+            tipo_contrato: true,
+            casas_aposta: {
+              select: {
+                id: true,
+                nome_exibicao: true,
+                historico_regras_casas: {
+                  where: { ativo: true },
+                  orderBy: { data_inicio: 'desc' },
+                  take: 1,
+                  select: { tipo_liberacao: true, delay_dias: true },
+                },
               },
             },
           },
-        },
-      })
-    : []
+        })
+      : []
 
-  const contratoIds = contratos.map(c => c.id)
+    const contratoIds = contratos.map(c => c.id)
 
-  // ── Aggregate all-time comissão ───────────────────────────────────────────
-  let totalComissao = 0
-  if (contratoIds.length > 0) {
-    const rows = await prisma.$queryRaw<[{ total: string }]>(
-      Prisma.sql`
-        SELECT COALESCE(SUM(receita_total_calculada), 0)::text AS total
-        FROM public.vw_producao_influencer
-        WHERE id_contrato = ANY(${contratoIds}::uuid[])
-      `
-    )
-    totalComissao = Number(rows[0]?.total ?? 0)
-  }
-
-  // ── Per-contract totals for Previsão table ────────────────────────────────
-  const perContratoTotais = contratoIds.length > 0
-    ? await prisma.$queryRaw<Array<{ id_contrato: string; receita_total: string }>>(
+    // ── Aggregate all-time comissão ─────────────────────────────────────────
+    if (contratoIds.length > 0) {
+      const rows = await prisma.$queryRaw<[{ total: string }]>(
         Prisma.sql`
-          SELECT id_contrato::text,
-                 COALESCE(SUM(receita_total_calculada), 0)::text AS receita_total
+          SELECT COALESCE(SUM(receita_total_calculada), 0)::text AS total
           FROM public.vw_producao_influencer
           WHERE id_contrato = ANY(${contratoIds}::uuid[])
-          GROUP BY id_contrato
         `
       )
-    : []
+      totalComissao = Number(rows[0]?.total ?? 0)
+    }
 
-  // ── Per-casa suspended (active) and paid amounts via saques_itens ─────────
-  const [saquesItensAtivos, saquesItensConcluidos] = publicUser
-    ? await Promise.all([
-        prisma.saques_itens.findMany({
-          where: {
-            saque: {
-              id_usuario: publicUser.id,
-              status: { in: ['AGUARDANDO_LIBERACAO', 'AGUARDANDO_NF', 'PROCESSANDO'] },
+    // ── Per-contract totals for Previsão table ──────────────────────────────
+    perContratoTotais = contratoIds.length > 0
+      ? await prisma.$queryRaw<Array<{ id_contrato: string; receita_total: string }>>(
+          Prisma.sql`
+            SELECT id_contrato::text,
+                   COALESCE(SUM(receita_total_calculada), 0)::text AS receita_total
+            FROM public.vw_producao_influencer
+            WHERE id_contrato = ANY(${contratoIds}::uuid[])
+            GROUP BY id_contrato
+          `
+        )
+      : []
+
+    // ── Per-casa suspended (active) and paid amounts via saques_itens ───────
+    ;[saquesItensAtivos, saquesItensConcluidos] = publicUser
+      ? await Promise.all([
+          prisma.saques_itens.findMany({
+            where: {
+              saque: {
+                id_usuario: publicUser.id,
+                status: { in: ['AGUARDANDO_LIBERACAO', 'AGUARDANDO_NF', 'PROCESSANDO'] },
+              },
             },
+            select: { id_casa: true, montante: true },
+          }),
+          prisma.saques_itens.findMany({
+            where: {
+              saque: { id_usuario: publicUser.id, status: 'CONCLUIDO' },
+            },
+            select: { id_casa: true, montante: true },
+          }),
+        ])
+      : [[], []]
+
+    // ── Saques ──────────────────────────────────────────────────────────────
+    saques = publicUser
+      ? await prisma.saques.findMany({
+          where: { id_usuario: publicUser.id },
+          orderBy: { created_at: 'desc' },
+          take: 100,
+          select: {
+            id: true,
+            montante: true,
+            status: true,
+            pix_key: true,
+            nota_fiscal: true,
+            motivo_correcao_nf: true,
+            correcao_nf_solicitada_em: true,
+            created_at: true,
+            efetivado_at: true,
           },
-          select: { id_casa: true, montante: true },
-        }),
-        prisma.saques_itens.findMany({
-          where: {
-            saque: { id_usuario: publicUser.id, status: 'CONCLUIDO' },
-          },
-          select: { id_casa: true, montante: true },
-        }),
-      ])
-    : [[], []]
+        })
+      : []
+  } catch (e) {
+    console.error('[influenciador/financeiro] prisma error:', e)
+    // Fall through with empty data → renders zeroed financeiro state below
+  }
 
   const suspendedPerCasa: Record<string, number> = {}
   for (const item of saquesItensAtivos) {
@@ -167,26 +221,6 @@ export default async function InfluenciadorFinanceiroPage() {
       suspendedValor:   suspended,
     }
   })
-
-  // ── Saques ────────────────────────────────────────────────────────────────
-  const saques = publicUser
-    ? await prisma.saques.findMany({
-        where: { id_usuario: publicUser.id },
-        orderBy: { created_at: 'desc' },
-        take: 100,
-        select: {
-          id: true,
-          montante: true,
-          status: true,
-          pix_key: true,
-          nota_fiscal: true,
-          motivo_correcao_nf: true,
-          correcao_nf_solicitada_em: true,
-          created_at: true,
-          efetivado_at: true,
-        },
-      })
-    : []
 
   // MANUAL incluso: status intermediário entre PROCESSANDO e CONCLUIDO, bloqueia saldo
   const ATIVOS_STATUS = ['AGUARDANDO_LIBERACAO', 'AGUARDANDO_NF', 'PROCESSANDO', 'MANUAL']

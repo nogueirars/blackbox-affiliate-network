@@ -35,32 +35,58 @@ export default async function AdminContratosPage({
     } : {}),
   }
 
-  const [contratosRaw, total, allCasas] = await Promise.all([
-    prisma.contratos.findMany({
-      where: baseWhere,
-      select: {
-        id: true, id_user_role: true, id_casa: true,
-        afp: true, tipo_contrato: true, ativo: true, created_at: true,
-        user_roles: {
-          select: {
-            id_usuario: true,
-            users: { select: { id: true, nome_completo: true, email: true } },
-          },
+  const contratosQuery = () => prisma.contratos.findMany({
+    where: baseWhere,
+    select: {
+      id: true, id_user_role: true, id_casa: true,
+      afp: true, tipo_contrato: true, ativo: true, created_at: true,
+      user_roles: {
+        select: {
+          id_usuario: true,
+          users: { select: { id: true, nome_completo: true, email: true } },
         },
-        casas_aposta: { select: { id: true, nome_exibicao: true } },
       },
-      orderBy: { created_at: 'desc' },
-      skip: offset,
-      take: limit,
-    }),
-    prisma.contratos.count({ where: baseWhere }),
+      casas_aposta: { select: { id: true, nome_exibicao: true } },
+    },
+    orderBy: { created_at: 'desc' },
+    skip: offset,
+    take: limit,
+  })
 
-    prisma.casas_aposta.findMany({
-      where: { ativo: true },
-      select: { id: true, nome_exibicao: true },
-      orderBy: { nome_exibicao: 'asc' },
-    }),
-  ])
+  let contratosRaw: Awaited<ReturnType<typeof contratosQuery>> = []
+  let total = 0
+  let allCasas: { id: string; nome_exibicao: string }[] = []
+
+  try {
+    ;[contratosRaw, total, allCasas] = await Promise.all([
+      contratosQuery(),
+      prisma.contratos.count({ where: baseWhere }),
+
+      prisma.casas_aposta.findMany({
+        where: { ativo: true },
+        select: { id: true, nome_exibicao: true },
+        orderBy: { nome_exibicao: 'asc' },
+      }),
+    ])
+  } catch (e) {
+    console.error('[admin/contratos] prisma error:', e)
+    return (
+      <ContratosClient
+        contratos={[]}
+        casas={[]}
+        userMap={{}}
+        casaMap={{}}
+        roleToUserMap={{}}
+        filter="ativo"
+        count={0}
+        page={1}
+        totalPages={0}
+        currentCasa=""
+        currentRole=""
+        currentQ=""
+      />
+    )
+  }
 
   // Build maps from included data (no extra queries needed)
   const roleToUserMap: Record<string, string> = {}

@@ -33,7 +33,7 @@ export default async function AdminUsuariosPage({
   }
 
   // 2. Fetch all administrators from database
-  const adminUsers = await prisma.public_users.findMany({
+  const adminUsersQuery = () => prisma.public_users.findMany({
     where,
     select: {
       id: true,
@@ -53,6 +53,28 @@ export default async function AdminUsuariosPage({
     },
     orderBy: { created_at: 'desc' },
   })
+
+  let adminUsers: Awaited<ReturnType<typeof adminUsersQuery>> = []
+  try {
+    adminUsers = await adminUsersQuery()
+  } catch (e) {
+    console.error('[admin/usuarios] prisma error:', e)
+    return (
+      <div className="flex flex-col gap-5 animate-fade-in">
+        <div>
+          <h1 className="text-display-lg text-[var(--color-on-surface)]">Usuários Administradores</h1>
+          <p className="text-body-md text-[var(--color-on-surface-variant)] mt-1">
+            Gerencie o acesso administrativo e crie novos administradores para o sistema
+          </p>
+        </div>
+        <UsuariosTableClient
+          admins={[]}
+          currentUserEmail={user.email ?? ''}
+          q={q}
+        />
+      </div>
+    )
+  }
 
   // 3. Render layout & client component
   return (

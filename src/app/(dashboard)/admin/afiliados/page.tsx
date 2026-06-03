@@ -106,80 +106,45 @@ export default async function AdminAfiliadosPage({
   if (andClauses.length > 0) where.AND = andClauses
 
   // ── Phase 1: Users + counts (parallel) ──────────────────────────────────────
-  const [
-    users,
-    count,
-    countTotal,
-    countAprovados,
-    countPendentesDireto,
-    countPendentesSubs,
-    countBloqueados,
-    countDireto,
-    countRede,
-    countPremium,
-  ] = await Promise.all([
-    prisma.public_users.findMany({
-      where,
-      select: {
-        id: true,
-        auth_id: true,
-        nome_completo: true,
-        email: true,
-        status_aprovacao: true,
-        id_gerente: true,
-        id_intermediario: true,
-        created_at: true,
-        updated_at: true,
-        premium: true,
-        telefone: true,
-        socials: {
-          select: {
-            instagram: true,
-            tiktok: true,
-            facebook: true,
-            telegram_canal: true,
-            whatsapp_canal: true,
-          }
-        },
-        users_users_id_gerenteTousers: {
-          select: { nome_completo: true },
-        },
-        users_users_id_intermediarioTousers: {
-          select: { nome_completo: true },
-        },
-        user_roles: {
-          where: { ativo: true },
-          select: { id: true, role: true, ref_code: true },
-          orderBy: { created_at: 'desc' },
-        },
+  const usersQuery = () => prisma.public_users.findMany({
+    where,
+    select: {
+      id: true,
+      auth_id: true,
+      nome_completo: true,
+      email: true,
+      status_aprovacao: true,
+      id_gerente: true,
+      id_intermediario: true,
+      created_at: true,
+      updated_at: true,
+      premium: true,
+      telefone: true,
+      socials: {
+        select: {
+          instagram: true,
+          tiktok: true,
+          facebook: true,
+          telegram_canal: true,
+          whatsapp_canal: true,
+        }
       },
-      orderBy: [{ status_aprovacao: 'asc' }, { created_at: 'desc' }],
-      skip: offset,
-      take: limit,
-    }),
-    prisma.public_users.count({ where }),
-    prisma.public_users.count({}),
-    prisma.public_users.count({ where: { status_aprovacao: 'APROVADO' } }),
-    prisma.public_users.count({ where: { status_aprovacao: 'PENDENTE', AND: [diretoCondition] } }),
-    prisma.public_users.count({ where: { status_aprovacao: 'PENDENTE', AND: [redeCondition] } }),
-    prisma.public_users.count({ where: { status_aprovacao: { in: ['BLOQUEADO', 'BLOQUEADO_TEMPORARIAMENTE'] } } }),
-    prisma.public_users.count({ where: diretoCondition }),
-    prisma.public_users.count({ where: redeCondition }),
-    prisma.public_users.count({ where: { premium: true } }),
-  ])
-
-  // ── Phase 2: Production data aggregated by user_role ────────────────────────
-  const userRoleIds = users.flatMap(u => u.user_roles.map(r => r.id))
-
-  // Get all contratos for these user_roles
-  const contratos = userRoleIds.length > 0
-    ? await prisma.contratos.findMany({
-      where: { id_user_role: { in: userRoleIds } },
-      select: { id: true, id_user_role: true },
-    })
-    : []
-
-  const contratoIds = contratos.map(c => c.id)
+      users_users_id_gerenteTousers: {
+        select: { nome_completo: true },
+      },
+      users_users_id_intermediarioTousers: {
+        select: { nome_completo: true },
+      },
+      user_roles: {
+        where: { ativo: true },
+        select: { id: true, role: true, ref_code: true },
+        orderBy: { created_at: 'desc' },
+      },
+    },
+    orderBy: [{ status_aprovacao: 'asc' }, { created_at: 'desc' }],
+    skip: offset,
+    take: limit,
+  })
 
   // Aggregate producao_dados grouped by contrato via raw SQL
   type ProdAggregate = {
@@ -190,19 +155,74 @@ export default async function AdminAfiliadosPage({
     last_date: Date | null
   }
 
-  const prodAggregate: ProdAggregate[] = contratoIds.length > 0
-    ? await prisma.$queryRaw<ProdAggregate[]>`
-        SELECT
-          id_contrato,
-          COALESCE(SUM(ftds), 0)::bigint           AS total_ftds,
-          COALESCE(SUM(cpas), 0)::bigint           AS total_cpas,
-          COALESCE(SUM(receita_bruta), 0)::text    AS total_receita,
-          MAX(data)                                AS last_date
-        FROM public.producao_dados
-        WHERE id_contrato = ANY(${contratoIds}::uuid[])
-        GROUP BY id_contrato
-      `
-    : []
+  let users: Awaited<ReturnType<typeof usersQuery>> = []
+  let count = 0
+  let countTotal = 0
+  let countAprovados = 0
+  let countPendentesDireto = 0
+  let countPendentesSubs = 0
+  let countBloqueados = 0
+  let countDireto = 0
+  let countRede = 0
+  let countPremium = 0
+  let contratos: { id: string; id_user_role: string }[] = []
+  let prodAggregate: ProdAggregate[] = []
+
+  try {
+    ;[
+      users,
+      count,
+      countTotal,
+      countAprovados,
+      countPendentesDireto,
+      countPendentesSubs,
+      countBloqueados,
+      countDireto,
+      countRede,
+      countPremium,
+    ] = await Promise.all([
+      usersQuery(),
+      prisma.public_users.count({ where }),
+      prisma.public_users.count({}),
+      prisma.public_users.count({ where: { status_aprovacao: 'APROVADO' } }),
+      prisma.public_users.count({ where: { status_aprovacao: 'PENDENTE', AND: [diretoCondition] } }),
+      prisma.public_users.count({ where: { status_aprovacao: 'PENDENTE', AND: [redeCondition] } }),
+      prisma.public_users.count({ where: { status_aprovacao: { in: ['BLOQUEADO', 'BLOQUEADO_TEMPORARIAMENTE'] } } }),
+      prisma.public_users.count({ where: diretoCondition }),
+      prisma.public_users.count({ where: redeCondition }),
+      prisma.public_users.count({ where: { premium: true } }),
+    ])
+
+    // ── Phase 2: Production data aggregated by user_role ──────────────────────
+    const userRoleIds = users.flatMap(u => u.user_roles.map(r => r.id))
+
+    // Get all contratos for these user_roles
+    contratos = userRoleIds.length > 0
+      ? await prisma.contratos.findMany({
+        where: { id_user_role: { in: userRoleIds } },
+        select: { id: true, id_user_role: true },
+      })
+      : []
+
+    const contratoIds = contratos.map(c => c.id)
+
+    prodAggregate = contratoIds.length > 0
+      ? await prisma.$queryRaw<ProdAggregate[]>`
+          SELECT
+            id_contrato,
+            COALESCE(SUM(ftds), 0)::bigint           AS total_ftds,
+            COALESCE(SUM(cpas), 0)::bigint           AS total_cpas,
+            COALESCE(SUM(receita_bruta), 0)::text    AS total_receita,
+            MAX(data)                                AS last_date
+          FROM public.producao_dados
+          WHERE id_contrato = ANY(${contratoIds}::uuid[])
+          GROUP BY id_contrato
+        `
+      : []
+  } catch (e) {
+    console.error('[admin/afiliados] prisma error:', e)
+    // Fall through with empty data → renders empty-state table below
+  }
 
   // Build lookup: userRoleId → { ftds, cpas, receita, lastDate }
   const contrtoToRole = new Map(contratos.map(c => [c.id, c.id_user_role]))

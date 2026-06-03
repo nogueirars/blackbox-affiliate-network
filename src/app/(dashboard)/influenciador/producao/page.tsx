@@ -67,6 +67,7 @@ export default async function InfluenciadorProducaoPage({
   let rows: VwRow[] = []
   let casasParaFiltro: [string, string][] = []
 
+  try {
   if (myId) {
     // 1. Encontrar o user_role de INFLUENCER para o usuário logado
     const userRole = await prisma.user_roles.findFirst({
@@ -163,6 +164,10 @@ export default async function InfluenciadorProducaoPage({
         }
       }
     }
+  }
+  } catch (e) {
+    console.error('[influenciador/producao] prisma error:', e)
+    // Fall through with empty data → renders empty filters/table below
   }
 
   // Totais

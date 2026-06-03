@@ -73,7 +73,9 @@ export default async function GerenteProducaoPage({
 
   let rows: VwRow[] = []
   let casasParaFiltro: [string, string][] = []
+  let influenciadoresLista: { id: string; nome_completo: string }[] = []
 
+  try {
   if (myId) {
     // 1. Encontrar o user_role de GERENTE para o usuário logado
     const userRole = await prisma.user_roles.findFirst({
@@ -180,8 +182,6 @@ export default async function GerenteProducaoPage({
     }
   }
 
-  let influenciadoresLista: { id: string; nome_completo: string }[] = []
-  
   if (myId) {
     const influenciadores = await prisma.public_users.findMany({
       where: {
@@ -196,6 +196,10 @@ export default async function GerenteProducaoPage({
       }
     })
     influenciadoresLista = influenciadores
+  }
+  } catch (e) {
+    console.error('[gerente/producao] prisma error:', e)
+    // Fall through with empty data → renders empty filters/table below
   }
 
   // Totais

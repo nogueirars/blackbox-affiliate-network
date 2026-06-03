@@ -8,7 +8,7 @@ export default async function AdminEntidadesPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user || user.app_metadata?.role !== 'admin') redirect('/dashboard')
 
-  const entidades = await prisma.entidades.findMany({
+  const entidadesQuery = () => prisma.entidades.findMany({
     select: {
       id:            true,
       razao_social:  true,
@@ -28,6 +28,18 @@ export default async function AdminEntidadesPage() {
     orderBy: { created_at: 'desc' },
     take: 200,
   })
+
+  let entidades: Awaited<ReturnType<typeof entidadesQuery>> = []
+  try {
+    entidades = await entidadesQuery()
+  } catch (e) {
+    console.error('[admin/entidades] prisma error:', e)
+    return (
+      <div className="animate-fade-in flex flex-col gap-6">
+        <EntidadesClient entidades={[]} />
+      </div>
+    )
+  }
 
   const serialized = entidades.map(e => ({
     ...e,

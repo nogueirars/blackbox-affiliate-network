@@ -73,7 +73,9 @@ export default async function IntermediarioProducaoPage({
 
   let rows: VwRow[] = []
   let casasParaFiltro: [string, string][] = []
+  let gerentesLista: { id: string; nome_completo: string }[] = []
 
+  try {
   if (myId) {
     // 1. Encontrar o user_role de INTERMEDIARIO para o usuário logado
     const userRole = await prisma.user_roles.findFirst({
@@ -180,8 +182,6 @@ export default async function IntermediarioProducaoPage({
     }
   }
 
-  let gerentesLista: { id: string; nome_completo: string }[] = []
-  
   if (myId) {
     const gerentes = await prisma.public_users.findMany({
       where: {
@@ -196,6 +196,10 @@ export default async function IntermediarioProducaoPage({
       }
     })
     gerentesLista = gerentes
+  }
+  } catch (e) {
+    console.error('[intermediario/producao] prisma error:', e)
+    // Fall through with empty data → renders empty filters/table below
   }
 
   // Totais

@@ -18,30 +18,39 @@ export default async function AdminTransparenciaPage({
   const { userId } = await params
   const { profile } = await searchParams
 
-  const adminCheck = await prisma.public_users.findUnique({
-    where: { auth_id: user.id },
-    select: { user_roles: { select: { role: true } } }
-  })
-  
-  if (!adminCheck?.user_roles.some(r => r.role === 'ADMIN')) {
+  // Determine which profile to load if not explicitly provided
+  let activeProfile: ProfileType = (profile as ProfileType) || 'influenciador'
+  let isAdmin = false
+  let data: Awaited<ReturnType<typeof getTransparenciaData>> | null = null
+
+  try {
+    const adminCheck = await prisma.public_users.findUnique({
+      where: { auth_id: user.id },
+      select: { user_roles: { select: { role: true } } }
+    })
+
+    isAdmin = !!adminCheck?.user_roles.some(r => r.role === 'ADMIN')
+
+    if (isAdmin && !profile) {
+      const targetRoles = await prisma.user_roles.findMany({
+        where: { id_usuario: userId, ativo: true },
+        select: { role: true }
+      })
+
+      if (targetRoles.some(r => r.role === 'GERENTE')) activeProfile = 'gerente'
+      else if (targetRoles.some(r => r.role === 'INTERMEDIARIO')) activeProfile = 'intermediario'
+      else activeProfile = 'influenciador'
+    }
+
+    if (isAdmin) {
+      data = await getTransparenciaData(userId, activeProfile)
+    }
+  } catch (e) {
+    console.error('[admin/transparencia] prisma error:', e)
     redirect('/dashboard')
   }
 
-  // Determine which profile to load if not explicitly provided
-  let activeProfile: ProfileType = (profile as ProfileType) || 'influenciador'
-  
-  if (!profile) {
-    const targetRoles = await prisma.user_roles.findMany({
-      where: { id_usuario: userId, ativo: true },
-      select: { role: true }
-    })
-    
-    if (targetRoles.some(r => r.role === 'GERENTE')) activeProfile = 'gerente'
-    else if (targetRoles.some(r => r.role === 'INTERMEDIARIO')) activeProfile = 'intermediario'
-    else activeProfile = 'influenciador'
-  }
-
-  const data = await getTransparenciaData(userId, activeProfile)
+  if (!isAdmin || !data) redirect('/dashboard')
 
   return (
     <div className="flex flex-col gap-4">

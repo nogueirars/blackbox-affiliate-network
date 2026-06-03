@@ -34,56 +34,28 @@ export default async function AdminProducaoPage({
   if (visao === 'gerente') roleFilter = 'GERENTE'
   if (visao === 'intermediario') roleFilter = 'INTERMEDIARIO'
 
-  const [casasResult, usuariosRaw, contratosRaw] = await Promise.all([
-    db.from('casas_aposta').select('id, nome_exibicao').eq('ativo', true).order('nome_exibicao'),
-    prisma.public_users.findMany({
-      where: {
-        ativo: true,
-        ...(roleFilter ? { user_roles: { some: { role: roleFilter, ativo: true } } } : {})
-      },
-      select: { 
-        id: true, 
-        nome_completo: true, 
-        email: true,
-        user_roles: {
-          where: { ativo: true },
-          select: { role: true }
-        }
-      },
-      orderBy: { nome_completo: 'asc' },
-    }),
-    prisma.contratos.findMany({
-      select: {
-        id: true,
-        user_roles: {
-          select: {
-            users: {
-              select: { id: true, nome_completo: true, email: true }
-            }
-          }
-        }
+  const usuariosQuery = () => prisma.public_users.findMany({
+    where: {
+      ativo: true,
+      ...(roleFilter ? { user_roles: { some: { role: roleFilter, ativo: true } } } : {})
+    },
+    select: {
+      id: true,
+      nome_completo: true,
+      email: true,
+      user_roles: {
+        where: { ativo: true },
+        select: { role: true }
       }
-    })
-  ])
-  const casas   = casasResult.data ?? []
-  const usuarios = usuariosRaw
+    },
+    orderBy: { nome_completo: 'asc' },
+  })
 
-  // Maps for joining names
+  let casas: { id: string; nome_exibicao: string }[] = []
+  let usuarios: Awaited<ReturnType<typeof usuariosQuery>> = []
   const casaMap = new Map<string, string>()
-  for (const c of casas) casaMap.set(c.id, c.nome_exibicao)
-
   const userMap = new Map<string, string>()
-  for (const u of usuarios) userMap.set(u.id, u.nome_completo ?? u.email)
-
   const contractUserMap = new Map<string, { id: string, name: string }>()
-  for (const c of contratosRaw) {
-    if (c.user_roles?.users) {
-      contractUserMap.set(c.id, {
-        id: c.user_roles.users.id,
-        name: c.user_roles.users.nome_completo ?? c.user_roles.users.email
-      })
-    }
-  }
 
   // ── Load production rows based on visao ────────────────────────────────────
   let rawRows: any[] = []
@@ -93,61 +65,99 @@ export default async function AdminProducaoPage({
   const until = new Date(to)
   until.setTime(until.getTime() + new Date().getTimezoneOffset() * 60000)
 
-  // Fetch logic
-  let filterContractIds: string[] | undefined = undefined
+  try {
+    const [casasResult, usuariosRaw, contratosRaw] = await Promise.all([
+      db.from('casas_aposta').select('id, nome_exibicao').eq('ativo', true).order('nome_exibicao'),
+      usuariosQuery(),
+      prisma.contratos.findMany({
+        select: {
+          id: true,
+          user_roles: {
+            select: {
+              users: {
+                select: { id: true, nome_completo: true, email: true }
+              }
+            }
+          }
+        }
+      })
+    ])
+    casas   = casasResult.data ?? []
+    usuarios = usuariosRaw
 
-  if (usuarioId && visao !== 'geral') {
-    const userRoles = await prisma.user_roles.findMany({
-      where: {
-        id_usuario: usuarioId,
-        role: roleFilter
-      },
-      select: { id: true }
-    })
-    const userContracts = await prisma.contratos.findMany({
-      where: { id_user_role: { in: userRoles.map(ur => ur.id) } },
-      select: { id: true }
-    })
-    filterContractIds = userContracts.map(c => c.id)
-  }
+    // Maps for joining names
+    for (const c of casas) casaMap.set(c.id, c.nome_exibicao)
 
-  if (visao === 'influenciador') {
-    rawRows = await prisma.vw_producao_influencer.findMany({
-      where: {
-        data: { gte: since, lte: until },
-        ...(casaId ? { id_casa: casaId } : {}),
-        ...(filterContractIds !== undefined ? { id_contrato: { in: filterContractIds } } : {}),
-      },
-      orderBy: { data: 'desc' }
-    })
-  } else if (visao === 'gerente') {
-    rawRows = await prisma.vw_producao_gerente.findMany({
-      where: {
-        data: { gte: since, lte: until },
-        ...(casaId ? { id_casa: casaId } : {}),
-        ...(filterContractIds !== undefined ? { id_contrato: { in: filterContractIds } } : {}),
-      },
-      orderBy: { data: 'desc' }
-    })
-  } else if (visao === 'intermediario') {
-    rawRows = await prisma.vw_producao_intermediario.findMany({
-      where: {
-        data: { gte: since, lte: until },
-        ...(casaId ? { id_casa: casaId } : {}),
-        ...(filterContractIds !== undefined ? { id_contrato: { in: filterContractIds } } : {}),
-      },
-      orderBy: { data: 'desc' }
-    })
-  } else {
-    // Geral -> producao_dados table
-    rawRows = await prisma.producao_dados.findMany({
-      where: {
-        data: { gte: since, lte: until },
-        ...(casaId ? { id_casa: casaId } : {}),
-        ...(usuarioId ? { id_usuario: usuarioId } : {}),
-      },
-      orderBy: { data: 'desc' }
-    })
+    for (const u of usuarios) userMap.set(u.id, u.nome_completo ?? u.email)
+
+    for (const c of contratosRaw) {
+      if (c.user_roles?.users) {
+        contractUserMap.set(c.id, {
+          id: c.user_roles.users.id,
+          name: c.user_roles.users.nome_completo ?? c.user_roles.users.email
+        })
+      }
+    }
+
+    // Fetch logic
+    let filterContractIds: string[] | undefined = undefined
+
+    if (usuarioId && visao !== 'geral') {
+      const userRoles = await prisma.user_roles.findMany({
+        where: {
+          id_usuario: usuarioId,
+          role: roleFilter
+        },
+        select: { id: true }
+      })
+      const userContracts = await prisma.contratos.findMany({
+        where: { id_user_role: { in: userRoles.map(ur => ur.id) } },
+        select: { id: true }
+      })
+      filterContractIds = userContracts.map(c => c.id)
+    }
+
+    if (visao === 'influenciador') {
+      rawRows = await prisma.vw_producao_influencer.findMany({
+        where: {
+          data: { gte: since, lte: until },
+          ...(casaId ? { id_casa: casaId } : {}),
+          ...(filterContractIds !== undefined ? { id_contrato: { in: filterContractIds } } : {}),
+        },
+        orderBy: { data: 'desc' }
+      })
+    } else if (visao === 'gerente') {
+      rawRows = await prisma.vw_producao_gerente.findMany({
+        where: {
+          data: { gte: since, lte: until },
+          ...(casaId ? { id_casa: casaId } : {}),
+          ...(filterContractIds !== undefined ? { id_contrato: { in: filterContractIds } } : {}),
+        },
+        orderBy: { data: 'desc' }
+      })
+    } else if (visao === 'intermediario') {
+      rawRows = await prisma.vw_producao_intermediario.findMany({
+        where: {
+          data: { gte: since, lte: until },
+          ...(casaId ? { id_casa: casaId } : {}),
+          ...(filterContractIds !== undefined ? { id_contrato: { in: filterContractIds } } : {}),
+        },
+        orderBy: { data: 'desc' }
+      })
+    } else {
+      // Geral -> producao_dados table
+      rawRows = await prisma.producao_dados.findMany({
+        where: {
+          data: { gte: since, lte: until },
+          ...(casaId ? { id_casa: casaId } : {}),
+          ...(usuarioId ? { id_usuario: usuarioId } : {}),
+        },
+        orderBy: { data: 'desc' }
+      })
+    }
+  } catch (e) {
+    console.error('[admin/producao] prisma error:', e)
+    // Fall through with empty data → renders empty filters/table below
   }
 
   // Filter specific user from views if needed (views might not have id_usuario directly in prisma mapped schema, wait, do they?

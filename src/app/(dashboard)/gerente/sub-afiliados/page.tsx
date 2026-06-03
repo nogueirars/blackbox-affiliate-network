@@ -8,48 +8,53 @@ export default async function GerenteSubAfiliadosPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const publicUser = await prisma.public_users.findUnique({
-    where: { auth_id: user.id },
-    select: { id: true }
-  })
-
   let subAfiliados: any[] = []
   let refCode: string | null = null
 
-  if (publicUser) {
-    const [subs, gerenteRole] = await Promise.all([
-      prisma.public_users.findMany({
-        where: { id_gerente: publicUser.id },
-        select: {
-          id: true,
-          nome_completo: true,
-          email: true,
-          status_aprovacao: true,
-          created_at: true,
-          premium: true,
-          user_roles: {
-            select: {
-              contratos: {
-                where: { ativo: true },
-                select: {
-                  id: true,
-                  tipo_contrato: true,
-                  afp: true,
-                  casas_aposta: { select: { nome_exibicao: true } },
+  try {
+    const publicUser = await prisma.public_users.findUnique({
+      where: { auth_id: user.id },
+      select: { id: true }
+    })
+
+    if (publicUser) {
+      const [subs, gerenteRole] = await Promise.all([
+        prisma.public_users.findMany({
+          where: { id_gerente: publicUser.id },
+          select: {
+            id: true,
+            nome_completo: true,
+            email: true,
+            status_aprovacao: true,
+            created_at: true,
+            premium: true,
+            user_roles: {
+              select: {
+                contratos: {
+                  where: { ativo: true },
+                  select: {
+                    id: true,
+                    tipo_contrato: true,
+                    afp: true,
+                    casas_aposta: { select: { nome_exibicao: true } },
+                  },
                 },
               },
             },
           },
-        },
-        orderBy: { created_at: 'desc' }
-      }),
-      prisma.user_roles.findFirst({
-        where: { id_usuario: publicUser.id, role: 'GERENTE', ativo: true },
-        select: { ref_code: true }
-      })
-    ])
-    subAfiliados = subs
-    refCode = gerenteRole?.ref_code ?? null
+          orderBy: { created_at: 'desc' }
+        }),
+        prisma.user_roles.findFirst({
+          where: { id_usuario: publicUser.id, role: 'GERENTE', ativo: true },
+          select: { ref_code: true }
+        })
+      ])
+      subAfiliados = subs
+      refCode = gerenteRole?.ref_code ?? null
+    }
+  } catch (e) {
+    console.error('[gerente/sub-afiliados] prisma error:', e)
+    // Fall through with empty data → renders empty state below
   }
 
   return (

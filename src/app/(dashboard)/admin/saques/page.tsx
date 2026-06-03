@@ -8,7 +8,7 @@ export default async function AdminSaquesPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user || user.app_metadata?.role !== 'admin') redirect('/dashboard')
 
-  const rawSaques = await prisma.saques.findMany({
+  const saquesQuery = () => prisma.saques.findMany({
     where: { ativo: true },
     orderBy: { created_at: 'desc' },
     take: 300,
@@ -25,6 +25,18 @@ export default async function AdminSaquesPage() {
       },
     },
   })
+
+  let rawSaques: Awaited<ReturnType<typeof saquesQuery>> = []
+  try {
+    rawSaques = await saquesQuery()
+  } catch (e) {
+    console.error('[admin/saques] prisma error:', e)
+    return (
+      <div className="animate-fade-in flex flex-col gap-6">
+        <SaquesAdminClient saques={[]} />
+      </div>
+    )
+  }
 
   const saques = rawSaques.map(s => ({
     id: s.id,

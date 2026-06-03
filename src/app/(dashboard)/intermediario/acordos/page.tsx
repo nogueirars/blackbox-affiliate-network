@@ -38,53 +38,17 @@ export default async function IntermediarioAcordosPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const intermediario = await prisma.public_users.findUnique({
-    where: { auth_id: user.id },
-    select: { id: true }
-  })
-
-  if (!intermediario) {
-    return (
-      <div className="animate-fade-in flex flex-col gap-6">
-        <div>
-          <h1 className="text-display-lg text-[var(--color-on-surface)] mb-1">Acordos Comerciais</h1>
-          <p className="text-body-md text-[var(--color-on-surface-variant)]">
-            Contratos com a BLACKBOX e repasses para sua rede de gerentes
-          </p>
-        </div>
-        <AcordosClient acordos={[]} influencers={[]} />
+  const emptyState = (
+    <div className="animate-fade-in flex flex-col gap-6">
+      <div>
+        <h1 className="text-display-lg text-[var(--color-on-surface)] mb-1">Acordos Comerciais</h1>
+        <p className="text-body-md text-[var(--color-on-surface-variant)]">
+          Contratos com a BLACKBOX e repasses para sua rede de gerentes
+        </p>
       </div>
-    )
-  }
-
-  const intermediarioRole = await prisma.user_roles.findFirst({
-    where: { id_usuario: intermediario.id, role: 'INTERMEDIARIO', ativo: true },
-    select: { id: true }
-  })
-
-  if (!intermediarioRole) {
-    return (
-      <div className="animate-fade-in flex flex-col gap-6">
-        <div>
-          <h1 className="text-display-lg text-[var(--color-on-surface)] mb-1">Acordos Comerciais</h1>
-          <p className="text-body-md text-[var(--color-on-surface-variant)]">
-            Contratos com a BLACKBOX e repasses para sua rede de gerentes
-          </p>
-        </div>
-        <AcordosClient acordos={[]} influencers={[]} />
-      </div>
-    )
-  }
-
-  const rawContratos = await prisma.contratos.findMany({
-    where: { id_user_role: intermediarioRole.id, ativo: true },
-    include: {
-      casas_aposta: { select: { id: true, nome_exibicao: true, icone_url: true } },
-      historico_contratos: {
-        orderBy: { data_inicio: 'desc' }
-      }
-    }
-  })
+      <AcordosClient acordos={[]} influencers={[]} />
+    </div>
+  )
 
   function serializeH(h: { id: string; data_inicio: Date; data_fim: Date | null; cpa_bruto: { toNumber(): number } | null; revshare_percentual: { toNumber(): number } | null }): HistoricoTermos {
     return {
@@ -96,77 +60,113 @@ export default async function IntermediarioAcordosPage() {
     }
   }
 
-  const acordos: Acordo[] = rawContratos.map(c => {
-    const ativo = c.historico_contratos.find(h => h.ativo) ?? null
-    return {
-      id: c.id,
-      tipo_contrato: c.tipo_contrato,
-      casa: {
-        id: c.casas_aposta.id,
-        nome_exibicao: c.casas_aposta.nome_exibicao,
-        icone_url: c.casas_aposta.icone_url ?? null
-      },
-      historico: ativo ? serializeH(ativo) : null,
-      historicoList: c.historico_contratos.map(serializeH),
+  let acordos: Acordo[] = []
+  let gerentes: Influencer[] = []
+
+  try {
+    const intermediario = await prisma.public_users.findUnique({
+      where: { auth_id: user.id },
+      select: { id: true }
+    })
+
+    if (!intermediario) {
+      return emptyState
     }
-  })
 
-  const acordoIds = acordos.map(a => a.id)
+    const intermediarioRole = await prisma.user_roles.findFirst({
+      where: { id_usuario: intermediario.id, role: 'INTERMEDIARIO', ativo: true },
+      select: { id: true }
+    })
 
-  const rawGerentes = await prisma.public_users.findMany({
-    where: { id_intermediario: intermediario.id, ativo: true },
-    select: {
-      id: true,
-      nome_completo: true,
-      email: true,
-      user_roles: {
-        where: { role: 'GERENTE', ativo: true },
-        select: { id: true }
-      }
+    if (!intermediarioRole) {
+      return emptyState
     }
-  })
 
-  const filteredGerentes = rawGerentes.filter(u => u.user_roles.length > 0)
-
-  const gerentes: Influencer[] = await Promise.all(
-    filteredGerentes.map(async u => {
-      const gerenteRoleId = u.user_roles[0].id
-
-      const subContratosRaw = acordoIds.length > 0
-        ? await prisma.contratos.findMany({
-            where: {
-              id_contrato_pai: { in: acordoIds },
-              id_user_role: gerenteRoleId,
-              ativo: true
-            },
-            include: {
-              historico_contratos: {
-                orderBy: { data_inicio: 'desc' }
-              }
-            }
-          })
-        : []
-
-      const subContratos: Record<string, SubContrato> = {}
-      for (const sc of subContratosRaw) {
-        if (!sc.id_contrato_pai) continue
-        const ativo = sc.historico_contratos.find(h => h.ativo) ?? null
-        subContratos[sc.id_contrato_pai] = {
-          id: sc.id,
-          historico: ativo ? serializeH(ativo) : null,
-          historicoList: sc.historico_contratos.map(serializeH),
+    const rawContratos = await prisma.contratos.findMany({
+      where: { id_user_role: intermediarioRole.id, ativo: true },
+      include: {
+        casas_aposta: { select: { id: true, nome_exibicao: true, icone_url: true } },
+        historico_contratos: {
+          orderBy: { data_inicio: 'desc' }
         }
       }
+    })
 
+    acordos = rawContratos.map(c => {
+      const ativo = c.historico_contratos.find(h => h.ativo) ?? null
       return {
-        id: u.id,
-        nome_completo: u.nome_completo,
-        email: u.email,
-        user_role_id: gerenteRoleId,
-        subContratos
+        id: c.id,
+        tipo_contrato: c.tipo_contrato,
+        casa: {
+          id: c.casas_aposta.id,
+          nome_exibicao: c.casas_aposta.nome_exibicao,
+          icone_url: c.casas_aposta.icone_url ?? null
+        },
+        historico: ativo ? serializeH(ativo) : null,
+        historicoList: c.historico_contratos.map(serializeH),
       }
     })
-  )
+
+    const acordoIds = acordos.map(a => a.id)
+
+    const rawGerentes = await prisma.public_users.findMany({
+      where: { id_intermediario: intermediario.id, ativo: true },
+      select: {
+        id: true,
+        nome_completo: true,
+        email: true,
+        user_roles: {
+          where: { role: 'GERENTE', ativo: true },
+          select: { id: true }
+        }
+      }
+    })
+
+    const filteredGerentes = rawGerentes.filter(u => u.user_roles.length > 0)
+
+    gerentes = await Promise.all(
+      filteredGerentes.map(async u => {
+        const gerenteRoleId = u.user_roles[0].id
+
+        const subContratosRaw = acordoIds.length > 0
+          ? await prisma.contratos.findMany({
+              where: {
+                id_contrato_pai: { in: acordoIds },
+                id_user_role: gerenteRoleId,
+                ativo: true
+              },
+              include: {
+                historico_contratos: {
+                  orderBy: { data_inicio: 'desc' }
+                }
+              }
+            })
+          : []
+
+        const subContratos: Record<string, SubContrato> = {}
+        for (const sc of subContratosRaw) {
+          if (!sc.id_contrato_pai) continue
+          const ativo = sc.historico_contratos.find(h => h.ativo) ?? null
+          subContratos[sc.id_contrato_pai] = {
+            id: sc.id,
+            historico: ativo ? serializeH(ativo) : null,
+            historicoList: sc.historico_contratos.map(serializeH),
+          }
+        }
+
+        return {
+          id: u.id,
+          nome_completo: u.nome_completo,
+          email: u.email,
+          user_role_id: gerenteRoleId,
+          subContratos
+        }
+      })
+    )
+  } catch (e) {
+    console.error('[intermediario/acordos] prisma error:', e)
+    return emptyState
+  }
 
   return (
     <div className="animate-fade-in flex flex-col gap-6">
