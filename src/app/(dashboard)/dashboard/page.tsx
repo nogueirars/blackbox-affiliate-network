@@ -258,27 +258,29 @@ export default async function DashboardPage() {
     totalSacado = saldo.pag_recebidos
 
     if (myId) {
-      const userRoleRow = await prisma.user_roles.findFirst({
-        where: { id_usuario: myId, role: 'INFLUENCER', ativo: true },
-        select: { id: true }
-      })
-      if (userRoleRow) {
-        const contratos = await prisma.contratos.findMany({
-          where: { id_user_role: userRoleRow.id, ativo: true },
+      try {
+        const userRoleRow = await prisma.user_roles.findFirst({
+          where: { id_usuario: myId, role: 'INFLUENCER', ativo: true },
           select: { id: true }
         })
-        const contractIds = contratos.map(c => c.id)
-        if (contractIds.length > 0) {
-          const viewRows = await prisma.vw_producao_influencer.findMany({
-            where: { id_contrato: { in: contractIds }, data: { gte: new Date(since30dStr) } }
+        if (userRoleRow) {
+          const contratos = await prisma.contratos.findMany({
+            where: { id_user_role: userRoleRow.id, ativo: true },
+            select: { id: true }
           })
-          for (const row of viewRows) {
-            prodStats.registros += Number(row.cadastros ?? 0)
-            prodStats.ftds      += Number(row.ftds ?? 0)
-            prodStats.cpas      += Number(row.cpas ?? 0)
+          const contractIds = contratos.map(c => c.id)
+          if (contractIds.length > 0) {
+            const viewRows = await prisma.vw_producao_influencer.findMany({
+              where: { id_contrato: { in: contractIds }, data: { gte: new Date(since30dStr) } }
+            })
+            for (const row of viewRows) {
+              prodStats.registros += Number(row.cadastros ?? 0)
+              prodStats.ftds      += Number(row.ftds ?? 0)
+              prodStats.cpas      += Number(row.cpas ?? 0)
+            }
           }
         }
-      }
+      } catch (e) { console.error('[dashboard] prisma influenciador:', e) }
       casas = await getTransparenciaData(myId, 'influenciador').catch(() => [])
     }
 
@@ -329,30 +331,30 @@ export default async function DashboardPage() {
         .eq('status', 'CONCLUIDO')
       totalSacado = (sqData ?? []).reduce((acc, r: { montante: string | number }) => acc + Number(r.montante ?? 0), 0)
 
-      const userRoleRow = await prisma.user_roles.findFirst({
-        where: { id_usuario: myId, role: 'GERENTE', ativo: true },
-        select: { id: true }
-      })
-      if (userRoleRow) {
-        const contratos = await prisma.contratos.findMany({
-          where: { id_user_role: userRoleRow.id, ativo: true },
+      try {
+        const userRoleRow = await prisma.user_roles.findFirst({
+          where: { id_usuario: myId, role: 'GERENTE', ativo: true },
           select: { id: true }
         })
-        const contractIds = contratos.map(c => c.id)
-        if (contractIds.length > 0) {
-          const viewRows = await prisma.vw_producao_gerente.findMany({
-            where: { id_contrato: { in: contractIds }, data: { gte: new Date(since30dStr) } }
+        if (userRoleRow) {
+          const contratos = await prisma.contratos.findMany({
+            where: { id_user_role: userRoleRow.id, ativo: true },
+            select: { id: true }
           })
-          for (const row of viewRows) {
-            prodStats.registros += Number(row.cadastros ?? 0)
-            prodStats.ftds      += Number(row.ftds ?? 0)
-            prodStats.cpas      += Number(row.cpas ?? 0)
-            // Para gerente, a 'Receita rede' pode ser representada pelo lucro total (líquido + repasse) ou ngr. 
-            // Vamos usar lucro_liquido_total para consistência com as KPIs de lucro
-            totalReceita += Number(row.lucro_liquido_total ?? 0) + Number(row.repasse_pago_total ?? 0)
+          const contractIds = contratos.map(c => c.id)
+          if (contractIds.length > 0) {
+            const viewRows = await prisma.vw_producao_gerente.findMany({
+              where: { id_contrato: { in: contractIds }, data: { gte: new Date(since30dStr) } }
+            })
+            for (const row of viewRows) {
+              prodStats.registros += Number(row.cadastros ?? 0)
+              prodStats.ftds      += Number(row.ftds ?? 0)
+              prodStats.cpas      += Number(row.cpas ?? 0)
+              totalReceita += Number(row.lucro_liquido_total ?? 0) + Number(row.repasse_pago_total ?? 0)
+            }
           }
         }
-      }
+      } catch (e) { console.error('[dashboard] prisma gerente:', e) }
 
       casas = await getTransparenciaData(myId, 'gerente').catch(() => [])
     }
@@ -417,28 +419,30 @@ export default async function DashboardPage() {
         .eq('status', 'CONCLUIDO')
       totalSacado = (sqData ?? []).reduce((acc, r: { montante: string | number }) => acc + Number(r.montante ?? 0), 0)
 
-      const userRoleRow = await prisma.user_roles.findFirst({
-        where: { id_usuario: myId, role: 'INTERMEDIARIO', ativo: true },
-        select: { id: true }
-      })
-      if (userRoleRow) {
-        const contratos = await prisma.contratos.findMany({
-          where: { id_user_role: userRoleRow.id, ativo: true },
+      try {
+        const userRoleRow = await prisma.user_roles.findFirst({
+          where: { id_usuario: myId, role: 'INTERMEDIARIO', ativo: true },
           select: { id: true }
         })
-        const contractIds = contratos.map(c => c.id)
-        if (contractIds.length > 0) {
-          const viewRows = await prisma.vw_producao_intermediario.findMany({
-            where: { id_contrato: { in: contractIds }, data: { gte: new Date(since30dStr) } }
+        if (userRoleRow) {
+          const contratos = await prisma.contratos.findMany({
+            where: { id_user_role: userRoleRow.id, ativo: true },
+            select: { id: true }
           })
-          for (const row of viewRows) {
-            prodStats.registros += Number(row.cadastros ?? 0)
-            prodStats.ftds      += Number(row.ftds ?? 0)
-            prodStats.cpas      += Number(row.cpas ?? 0)
-            totalReceita += Number(row.lucro_liquido_total ?? 0) + Number(row.custo_repassado_total ?? 0)
+          const contractIds = contratos.map(c => c.id)
+          if (contractIds.length > 0) {
+            const viewRows = await prisma.vw_producao_intermediario.findMany({
+              where: { id_contrato: { in: contractIds }, data: { gte: new Date(since30dStr) } }
+            })
+            for (const row of viewRows) {
+              prodStats.registros += Number(row.cadastros ?? 0)
+              prodStats.ftds      += Number(row.ftds ?? 0)
+              prodStats.cpas      += Number(row.cpas ?? 0)
+              totalReceita += Number(row.lucro_liquido_total ?? 0) + Number(row.custo_repassado_total ?? 0)
+            }
           }
         }
-      }
+      } catch (e) { console.error('[dashboard] prisma intermediario:', e) }
 
       casas = await getTransparenciaData(myId, 'intermediario').catch(() => [])
     }
