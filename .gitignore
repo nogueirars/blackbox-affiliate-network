@@ -42,3 +42,4 @@ next-env.d.ts
 
 # claude code local overrides
 .claude/*
+.aiox-core/node_modules/
