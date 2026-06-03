@@ -122,6 +122,7 @@ export default function CasasClient({ casas: initial, entidades }: Props) {
         created_at: createdCasa.created_at,
         id_entidade: createdCasa.id_entidade,
         entidades: selectedEntidade ? { id: selectedEntidade.id, nome: selectedEntidade.nome } : null,
+        affiliate_url: createdCasa.affiliate_url ?? null,
         tem_regras: hasRules,
         materiais_count: 0,
       }
