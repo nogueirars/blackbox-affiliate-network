@@ -73,39 +73,45 @@ export async function POST(req: NextRequest) {
   const authId = authData.user.id
 
   try {
-    const newUser = await prisma.public_users.create({
-      data: {
-        auth_id: authId,
-        nome_completo,
-        cpf: cpf ?? null,
-        data_nascimento: new Date(data_nascimento),
-        telefone,
-        email,
-        id_gerente: idGerente,
-        id_intermediario: idIntermediario,
-      },
-    })
-
     const novoRefCode = await generateUniqueRefCode()
-    await prisma.user_roles.create({
-      data: {
-        id_usuario: newUser.id,
-        role: papelDestino,
-        ref_code: novoRefCode,
-      },
-    })
-    await syncClaim(newUser.id)
 
-    if (instagram || telegram_canal || whatsapp_canal) {
-      await prisma.user_socials.create({
+    // M1: todas as escritas Prisma em uma única transação
+    const newUser = await prisma.$transaction(async (tx) => {
+      const user = await tx.public_users.create({
         data: {
-          user_id: newUser.id,
-          instagram: instagram ?? null,
-          telegram_canal: telegram_canal ?? null,
-          whatsapp_canal: whatsapp_canal ?? null,
+          auth_id: authId,
+          nome_completo,
+          cpf: cpf ?? null,
+          data_nascimento: new Date(data_nascimento),
+          telefone,
+          email,
+          id_gerente: idGerente,
+          id_intermediario: idIntermediario,
         },
       })
-    }
+
+      await tx.user_roles.create({
+        data: { id_usuario: user.id, role: papelDestino, ref_code: novoRefCode },
+      })
+
+      if (instagram || telegram_canal || whatsapp_canal) {
+        await tx.user_socials.create({
+          data: {
+            user_id: user.id,
+            instagram: instagram ?? null,
+            telegram_canal: telegram_canal ?? null,
+            whatsapp_canal: whatsapp_canal ?? null,
+          },
+        })
+      }
+
+      return user
+    })
+
+    // syncClaim fora da transação (opera no Supabase Auth, não no DB)
+    syncClaim(newUser.id).catch(err =>
+      console.error('[register] syncClaim falhou — JWT sem role:', err)
+    )
 
     return NextResponse.json({
       success: true,

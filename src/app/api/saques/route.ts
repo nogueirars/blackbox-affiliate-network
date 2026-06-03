@@ -52,6 +52,11 @@ export async function POST(req: NextRequest) {
   if (!Array.isArray(itens) || itens.length === 0)
     return NextResponse.json({ error: 'Selecione pelo menos uma casa' }, { status: 400 })
 
+  // H3: validar que soma dos itens bate com montante declarado
+  const somaItens = itens.reduce((acc, i) => acc + Number(i.montante), 0)
+  if (Math.abs(somaItens - montante) > 0.01)
+    return NextResponse.json({ error: 'Soma dos itens não confere com o montante total' }, { status: 400 })
+
   let saldoDisponivel = 0
   try {
     const r = role.toUpperCase()
