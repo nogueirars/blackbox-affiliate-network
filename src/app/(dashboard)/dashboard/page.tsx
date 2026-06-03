@@ -38,6 +38,7 @@ export default async function DashboardPage() {
   if (!user) redirect('/login')
 
   const role = (user.app_metadata?.role ?? 'influenciador') as string
+  console.log('[dashboard] role:', role, 'user:', user.email)
   const db = createAdminClient()
 
   // ── Admin path ────────────────────────────────────────────────────────────

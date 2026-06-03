@@ -39,14 +39,20 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   // DB lookup — fetch publicUser + roles together so we can check for DB-level ADMIN
   // before applying the approval-status gate (users with ADMIN role are never blocked)
-  const publicUser = user.id ? await prisma.public_users.findUnique({
-    where: { auth_id: user.id },
-    select: {
-      id: true,
-      status_aprovacao: true,
-      user_roles: { where: { ativo: true }, select: { role: true } },
-    },
-  }) : null
+  let publicUser: { id: string; status_aprovacao: string; user_roles: { role: string }[] } | null = null
+  try {
+    publicUser = user.id ? await prisma.public_users.findUnique({
+      where: { auth_id: user.id },
+      select: {
+        id: true,
+        status_aprovacao: true,
+        user_roles: { where: { ativo: true }, select: { role: true } },
+      },
+    }) : null
+  } catch (e) {
+    console.error('[layout] prisma.public_users error:', e)
+    // Graceful fallback — rely on JWT meta only; no DB-based admin check
+  }
 
   const isAdminByDB = publicUser?.user_roles.some(r => r.role === 'ADMIN') ?? false
   const isAdmin = isAdminByMeta || isAdminByDB
