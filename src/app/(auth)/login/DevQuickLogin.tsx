@@ -9,9 +9,9 @@ import { createClient } from '@/lib/supabase/client'
 
 const ACCOUNTS = [
   { label: 'Agência',      email: 'test@orbit.dev',           color: '#c084fc', redirect: '/dashboard' },
-  { label: 'Afiliado',     email: 'influencer@orbit.dev',     color: '#60a5fa', redirect: '/afiliado' },
-  { label: 'Intermediário',email: 'intermediario@orbit.dev',  color: '#34d399', redirect: '/intermediario' },
-  { label: 'Gerente',      email: 'gerente@orbit.dev',        color: '#fbbf24', redirect: '/gerente' },
+  { label: 'Afiliado',     email: 'influencer@orbit.dev',     color: '#60a5fa', redirect: '/dashboard' },
+  { label: 'Intermediário',email: 'intermediario@orbit.dev',  color: '#34d399', redirect: '/dashboard' },
+  { label: 'Gerente',      email: 'gerente@orbit.dev',        color: '#fbbf24', redirect: '/dashboard' },
 ] as const
 
 const PASSWORD = 'Orbit@2026'
