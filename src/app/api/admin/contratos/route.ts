@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
     )
   }
 
-  let afpClean = null
+  let afpClean: string | null = null
   if (afp) {
     afpClean = String(afp).trim().toUpperCase()
     if (!/^[A-Z0-9]{8}$/.test(afpClean)) {
@@ -45,19 +45,27 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: `tipo_contrato inválido. Use: ${valid.join(', ')}` }, { status: 400 })
   }
 
-  // Auto-generate link_afiliacao from casa affiliate_url template + AFP
-  let linkAfiliacao: string | null = null
-  if (afpClean) {
-    const casa = await prisma.casas_aposta.findUnique({
-      where: { id: id_casa },
-      select: { affiliate_url: true },
-    })
-    if (casa?.affiliate_url) {
-      linkAfiliacao = casa.affiliate_url.replace('[AFP]', afpClean)
+  const db = createAdminClient()
+
+  // contratos.afp é NOT NULL: sem AFP informado, gera um código único no servidor
+  if (!afpClean) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: generatedAfp, error: afpError } = await (db as any).rpc('generate_unique_afp')
+    if (afpError) {
+      return NextResponse.json({ error: `Erro ao gerar AFP: ${afpError.message}` }, { status: 500 })
     }
+    afpClean = generatedAfp as string
   }
 
-  const db = createAdminClient()
+  // Auto-generate link_afiliacao from casa affiliate_url template + AFP
+  let linkAfiliacao: string | null = null
+  const casa = await prisma.casas_aposta.findUnique({
+    where: { id: id_casa },
+    select: { affiliate_url: true },
+  })
+  if (casa?.affiliate_url) {
+    linkAfiliacao = casa.affiliate_url.replace('[AFP]', afpClean)
+  }
 
   // Block duplicate: same (id_user_role + id_casa) active contract
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
